@@ -3,7 +3,9 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterDetailsPage from './pages/auth/RegisterDetailsPage';
-import HomePage from './pages/auth/HomePage';
+import LandingPage from './pages/LandingPage';
+import VehiclesPage from './pages/VehiclesPage';
+import DashboardPage from './pages/DashBoardPage';
 import './styles/animations.css';
 
 // Protected Route Component
@@ -17,7 +19,7 @@ function ProtectedRoute({ children }) {
   return children;
 }
 
-// Redirect if already logged in
+// Public Route Component
 function PublicRoute({ children }) {
   const { user } = useAuth();
   
@@ -31,12 +33,14 @@ function PublicRoute({ children }) {
 function AppRoutes() {
   return (
     <Routes>
+      {/* Public Routes */}
       <Route path="/" element={
         <PublicRoute>
           <LoginPage />
         </PublicRoute>
       } />
       
+      {/* Protected Routes */}
       <Route path="/register-details" element={
         <ProtectedRoute>
           <RegisterDetailsPage />
@@ -45,12 +49,24 @@ function AppRoutes() {
       
       <Route path="/home" element={
         <ProtectedRoute>
-          <HomePage />
+          <LandingPage />
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/vehicles" element={
+        <ProtectedRoute>
+          <VehiclesPage />
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/dashboard" element={
+        <ProtectedRoute>
+          <DashboardPage />
         </ProtectedRoute>
       } />
 
-      {/* Catch all - redirect to login */}
-      <Route path="*" element={<Navigate to="/" replace />} />
+      {/* Catch all - redirect to home */}
+      <Route path="*" element={<Navigate to="/home" replace />} />
     </Routes>
   );
 }
