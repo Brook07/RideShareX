@@ -21,7 +21,7 @@ const userSchema = new mongoose.Schema({
     required: true
   },
   
-  // Additional User Details
+  // Additional User Details (filled after first login)
   phone: {
     type: String,
     default: null
@@ -34,14 +34,22 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: null
   },
-  userType: {
-    type: String,
-    enum: ['renter', 'owner'],
-    default: 'renter'
-  },
   
   // Profile Status
   isProfileComplete: {
+    type: Boolean,
+    default: false
+  },
+  
+  // User role - can be changed later through settings
+  role: {
+    type: String,
+    enum: ['user', 'admin'],
+    default: 'user'
+  },
+  
+  // Track if user has listed vehicles (computed field)
+  hasListedVehicles: {
     type: Boolean,
     default: false
   },
@@ -56,5 +64,14 @@ const userSchema = new mongoose.Schema({
     default: Date.now
   }
 });
+
+// Virtual field to check if user is an owner
+userSchema.virtual('isOwner').get(function() {
+  return this.hasListedVehicles;
+});
+
+// Ensure virtual fields are included when converting to JSON
+userSchema.set('toJSON', { virtuals: true });
+userSchema.set('toObject', { virtuals: true });
 
 module.exports = mongoose.model('User', userSchema);

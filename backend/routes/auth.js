@@ -51,7 +51,8 @@ router.post('/google-login', async (req, res) => {
           phone: user.phone,
           address: user.address,
           city: user.city,
-          userType: user.userType,
+          role: user.role,
+          hasListedVehicles: user.hasListedVehicles,
           isProfileComplete: user.isProfileComplete
         }
       });
@@ -64,7 +65,9 @@ router.post('/google-login', async (req, res) => {
         email,
         name,
         picture,
-        isProfileComplete: false
+        isProfileComplete: false,
+        role: 'user',
+        hasListedVehicles: false
       });
 
       await user.save();
@@ -83,7 +86,9 @@ router.post('/google-login', async (req, res) => {
           email: user.email,
           name: user.name,
           picture: user.picture,
-          isProfileComplete: false
+          isProfileComplete: false,
+          role: 'user',
+          hasListedVehicles: false
         }
       });
     }
@@ -98,10 +103,10 @@ router.post('/google-login', async (req, res) => {
 // @access  Private
 router.post('/complete-profile', authMiddleware, async (req, res) => {
   try {
-    const { phone, address, city, userType } = req.body;
+    const { phone, address, city } = req.body;
 
-    // Validate input
-    if (!phone || !address || !city || !userType) {
+    // Validate input - removed userType
+    if (!phone || !address || !city) {
       return res.status(400).json({ message: 'All fields are required' });
     }
 
@@ -116,7 +121,6 @@ router.post('/complete-profile', authMiddleware, async (req, res) => {
     user.phone = phone;
     user.address = address;
     user.city = city;
-    user.userType = userType;
     user.isProfileComplete = true;
 
     await user.save();
@@ -134,7 +138,8 @@ router.post('/complete-profile', authMiddleware, async (req, res) => {
         phone: user.phone,
         address: user.address,
         city: user.city,
-        userType: user.userType,
+        role: user.role,
+        hasListedVehicles: user.hasListedVehicles,
         isProfileComplete: user.isProfileComplete
       }
     });
@@ -165,7 +170,8 @@ router.get('/me', authMiddleware, async (req, res) => {
         phone: user.phone,
         address: user.address,
         city: user.city,
-        userType: user.userType,
+        role: user.role,
+        hasListedVehicles: user.hasListedVehicles,
         isProfileComplete: user.isProfileComplete,
         createdAt: user.createdAt,
         lastLogin: user.lastLogin

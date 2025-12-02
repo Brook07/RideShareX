@@ -12,8 +12,8 @@ export default function RegisterDetailsPage() {
   const [formData, setFormData] = useState({
     phone: '',
     address: '',
-    city: '',
-    userType: 'renter'
+    city: ''
+    // Removed userType - no longer needed in registration
   });
 
   const slides = [
@@ -24,14 +24,14 @@ export default function RegisterDetailsPage() {
       gradient: "from-blue-500 to-cyan-400"
     },
     {
-      title: "Start Renting",
+      title: "Start Your Journey",
       subtitle: "Access thousands of vehicles in your area",
       icon: Truck,
       gradient: "from-blue-600 to-indigo-500"
     },
     {
-      title: "List & Earn",
-      subtitle: "Share your vehicle and make money",
+      title: "Easy & Convenient",
+      subtitle: "Book vehicles anytime, anywhere",
       icon: Bike,
       gradient: "from-cyan-500 to-blue-500"
     }
@@ -104,12 +104,17 @@ export default function RegisterDetailsPage() {
             <div className="relative">
               <Phone className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
-                type="tel"
-                value={formData.phone}
-                onChange={(e) => handleInputChange('phone', e.target.value)}
-                placeholder="+1 (555) 000-0000"
-                className="w-full pl-12 pr-4 py-3.5 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition-all text-gray-800 placeholder-gray-400"
-              />
+              type="tel"
+              value={formData.phone}
+              onChange={(e) => {
+              let value = e.target.value.replace(/\D/g, ""); // allow digits only
+              if (value.length > 10) value = value.slice(0, 10); // limit to 10
+              handleInputChange("phone", value);
+      }}
+      maxLength={10}
+      placeholder="9800000000"
+      className="w-full pl-12 pr-4 py-3.5 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition-all text-gray-800 placeholder-gray-400"
+    />
             </div>
           </div>
 
@@ -124,7 +129,7 @@ export default function RegisterDetailsPage() {
                 type="text"
                 value={formData.address}
                 onChange={(e) => handleInputChange('address', e.target.value)}
-                placeholder="123 Main Street"
+                placeholder="Thamel, Kathmandu"
                 className="w-full pl-12 pr-4 py-3.5 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition-all text-gray-800 placeholder-gray-400"
               />
             </div>
@@ -135,42 +140,19 @@ export default function RegisterDetailsPage() {
             <label className="block text-sm font-semibold text-gray-700 mb-2">
               City
             </label>
-            <input
-              type="text"
+            <select
               value={formData.city}
               onChange={(e) => handleInputChange('city', e.target.value)}
-              placeholder="New York"
-              className="w-full px-4 py-3.5 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition-all text-gray-800 placeholder-gray-400"
-            />
-          </div>
-
-          {/* User Type */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-3">
-              I want to:
-            </label>
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                onClick={() => handleInputChange('userType', 'renter')}
-                className={`py-3 px-4 rounded-xl border-2 font-semibold transition-all ${
-                  formData.userType === 'renter'
-                    ? 'border-blue-500 bg-blue-50 text-blue-700'
-                    : 'border-gray-200 text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                Rent Vehicles
-              </button>
-              <button
-                onClick={() => handleInputChange('userType', 'owner')}
-                className={`py-3 px-4 rounded-xl border-2 font-semibold transition-all ${
-                  formData.userType === 'owner'
-                    ? 'border-blue-500 bg-blue-50 text-blue-700'
-                    : 'border-gray-200 text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                List My Vehicle
-              </button>
-            </div>
+              className="w-full px-4 py-3.5 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition-all text-gray-800 bg-white"
+            >
+              <option value="">Select your city</option>
+              <option value="Kathmandu">Kathmandu</option>
+              <option value="Pokhara">Pokhara</option>
+              <option value="Dhulikhel">Dhulikhel</option>
+              <option value="Banepa">Banepa</option>
+              <option value="Bhaktapur">Bhaktapur</option>
+              <option value="Lalitpur">Lalitpur</option>
+            </select>
           </div>
 
           {/* Submit Button */}
