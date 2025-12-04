@@ -20,6 +20,7 @@ export default function Navbar() {
     { name: 'Vehicles', path: '/vehicles' },
     { name: 'My Bookings', path: '/bookings' },
     { name: 'Dashboard', path: '/dashboard' },
+    { name : 'Become a Host', path : '/AddVehicle'}
   ];
 
   const isActive = (path) => location.pathname === path;

@@ -6,6 +6,7 @@ import RegisterDetailsPage from './pages/auth/RegisterDetailsPage';
 import LandingPage from './pages/LandingPage';
 import VehiclesPage from './pages/VehiclesPage';
 import DashboardPage from './pages/DashBoardPage';
+import AddVehiclePage from './pages/vehicles/AddVehiclePage';
 import './styles/animations.css';
 
 // Protected Route Component
@@ -62,6 +63,12 @@ function AppRoutes() {
       <Route path="/dashboard" element={
         <ProtectedRoute>
           <DashboardPage />
+        </ProtectedRoute>
+      } />
+
+<Route path="/AddVehicle" element={
+        <ProtectedRoute>
+          <AddVehiclePage />
         </ProtectedRoute>
       } />
 
