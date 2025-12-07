@@ -12,6 +12,11 @@ export default function LandingPage() {
   // Vehicle images array - Cleaned & corrected
 const vehicleImages = [
   {
+    url: '/photos/suzuki_swift.jpg',
+    title: 'Suzuki Swift',
+    description: 'A compact and fuel-efficient hatchback for daily use'
+  },
+  {
     url: '/photos/beneli302s.jpg',
     title: 'Benelli 302S',
     description: 'A stylish sports bike with powerful performance'
@@ -26,11 +31,7 @@ const vehicleImages = [
     title: 'KTM Duke 390',
     description: 'A lightweight street bike with aggressive power'
   },
-  {
-    url: '/photos/suzuki_swift.jpg',
-    title: 'Suzuki Swift',
-    description: 'A compact and fuel-efficient hatchback for daily use'
-  },
+  
   {
     url: '/photos/tesla-roadster.jpg',
     title: 'Tesla Roadster',
