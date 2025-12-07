@@ -24,4 +24,18 @@ router.post("/add", authMiddleware, async (req, res) => {
   }
 });
 
+// GET all vehicles for a specific user by MongoDB _id
+router.get("/user/:userId", async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const vehicles = await Vehicle.find({ owner: userId });
+
+    res.json({ success: true, vehicles });
+  } catch (error) {
+    console.error("Get vehicles error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
 module.exports = router;
