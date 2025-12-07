@@ -1,12 +1,19 @@
 const mongoose = require("mongoose");
 
-const VehicleSchema = new mongoose.Schema({
+const vehicleSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true
+  },
   owner: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
+    required: true
   },
-  name: String, // ONLY ONE FIELD FOR TEST
-  createdAt: { type: Date, default: Date.now }
+  plateNumber: {
+    type: String,
+    default: null // remove unique
+  }
 });
 
-module.exports = mongoose.model("Vehicle", VehicleSchema);
+module.exports = mongoose.model("Vehicle", vehicleSchema);

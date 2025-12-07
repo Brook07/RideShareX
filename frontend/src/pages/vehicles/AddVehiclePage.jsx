@@ -1,44 +1,52 @@
+
 import React, { useState } from "react";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
 
 export default function AddVehiclePage() {
-  const { user } = useAuth();
   const [vehicleName, setVehicleName] = useState("");
+  const { user } = useAuth();
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!vehicleName) return alert("Enter vehicle name");
+
     try {
       const res = await axios.post("http://localhost:5000/api/vehicles/add", {
-        name: vehicleName,
-        owner: user._id
+        name: vehicleName
       });
 
-      alert("Vehicle saved!");
-      console.log("Response:", res.data);
-    } catch (error) {
-      console.log(error);
-      alert("Error saving vehicle");
+      alert("Vehicle added!");
+      console.log(res.data);
+
+      setVehicleName("");
+    } catch (err) {
+      console.log(err);
+      alert("Failed to add vehicle");
     }
   };
 
   return (
-    <div className="max-w-md mx-auto mt-20">
-      <h1 className="text-3xl font-bold mb-6">Add Vehicle (Test)</h1>
+    <div className="p-5">
+      <h1>Add Vehicle</h1>
 
-      <input
-        type="text"
-        placeholder="Enter vehicle name"
-        value={vehicleName}
-        onChange={(e) => setVehicleName(e.target.value)}
-        className="w-full px-4 py-3 border rounded-lg mb-4"
-      />
+      <form onSubmit={handleSubmit} className="mt-4">
+        <input
+          type="text"
+          placeholder="Vehicle Name"
+          value={vehicleName}
+          onChange={(e) => setVehicleName(e.target.value)}
+          className="border p-2 rounded w-full"
+        />
 
-      <button
-        onClick={handleSubmit}
-        className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold"
-      >
-        Submit
-      </button>
+        <button
+          type="submit"
+          className="mt-3 p-2 bg-blue-500 text-white rounded"
+        >
+          Save Vehicle
+        </button>
+      </form>
     </div>
   );
 }

@@ -1,26 +1,32 @@
-const Vehicle = require("../models/Vehicle");
+const Vehicle = require("../models/vehicleModel");
 
 exports.addVehicle = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.userId; // from middleware
 
     const newVehicle = await Vehicle.create({
       owner: userId,
-      ...req.body
+      name: req.body.name
     });
 
-    res.json({ vehicle: newVehicle });
-  } catch (error) {
-    console.error("Add vehicle error:", error);
-    res.status(500).json({ message: "Server Error" });
+    res.status(201).json({
+      message: "Vehicle added successfully",
+      vehicle: newVehicle
+    });
+  } catch (err) {
+    console.error("Add vehicle error:", err);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
 exports.getUserVehicles = async (req, res) => {
   try {
-    const vehicles = await Vehicle.find({ owner: req.user.id });
+    const userId = req.userId;
+
+    const vehicles = await Vehicle.find({ owner: userId });
+
     res.json({ vehicles });
-  } catch (error) {
-    res.status(500).json({ message: "Server Error" });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
   }
 };

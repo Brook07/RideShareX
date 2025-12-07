@@ -5,7 +5,6 @@ const connectDB = require('./config/db');
 const authRoutes = require('./routes/auth');
 const vehicleRoutes = require("./routes/vehicle");
 
-
 // Load environment variables
 dotenv.config();
 
@@ -29,7 +28,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.use('/api/auth', authRoutes);
-app.use("/api/vehicles", vehicleRoutes);
+app.use('/api/vehicles', vehicleRoutes);   // ✅ Use imported route
 
 // Health check route
 app.get('/api/health', (req, res) => {
