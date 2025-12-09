@@ -14,7 +14,7 @@ const app = express();
 // Connect to MongoDB
 connectDB();
 
-// TEST: Verify User model is loaded correctly
+
 const User = require('./models/User');
 console.log('🧪 User model loaded:', typeof User.findOne); // Should show "function"
 
