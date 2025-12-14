@@ -5,16 +5,12 @@ const connectDB = require('./config/db');
 const authRoutes = require('./routes/auth');
 const vehicleRoutes = require("./routes/vehicle");
 
-// Load environment variables
+
 dotenv.config();
 
-// Initialize Express
 const app = express();
 
-
-// Connect to MongoDB
 connectDB();
-
 
 const User = require('./models/User');
 console.log('🧪 User model loaded:', typeof User.findOne); // Should show "function"
