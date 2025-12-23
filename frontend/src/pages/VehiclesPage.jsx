@@ -163,7 +163,13 @@ useEffect(() => {
                   </div>
                 </div>
 
-                <button className="w-full mt-4 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors">
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate('/book-now', { state: { vehicle } });
+                  }}
+                  className="w-full mt-4 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors"
+                >
                   Book Now
                 </button>
               </div>
