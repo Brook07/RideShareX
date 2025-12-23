@@ -17,44 +17,37 @@ export default function VehiclesPage() {
   const [vehicles, setVehicles] = useState([]);
   const [searchParams, setSearchParams] = useState(location.state || {});
 
-  // 📌 Replace this with the logged-in user's ID
-  const userId = "69312af1f47f6e5b18b191c8";
+useEffect(() => {
+  const fetchVehicles = async () => {
+    try {
+      const res = await axios.get("http://localhost:5000/api/vehicles");
 
-  // 🚀 Fetch vehicles from backend
-  useEffect(() => {
-    const fetchVehicles = async () => {
-      try {
-        const res = await axios.get(
-          `http://localhost:5000/api/vehicles/user/${userId}`
-        );
+      const mappedVehicles = res.data.vehicles.map((v) => ({
+        id: v._id,
+        name: v.name,
+        plateNumber: v.plateNumber || "N/A",
+        owner: v.owner,
 
-        // Add fallback values for your UI fields
-        const mappedVehicles = res.data.vehicles.map((v) => ({
-          id: v._id,
-          name: v.name,
-          plateNumber: v.plateNumber || "N/A",
-          owner: v.owner,
-          // fallback UI data to match your card layout
-          type: "car",
-          image:
-            "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=500",
-          price: 2000,
-          location: "Kathmandu",
-          rating: 4.5,
-          reviews: 50,
-          seats: 4,
-          fuel: "Petrol",
-          transmission: "Manual"
-        }));
+        type: "car",
+        image:
+          "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=500",
+        price: 2000,
+        location: "Kathmandu",
+        rating: 4.5,
+        reviews: 50,
+        seats: 4,
+        fuel: "Petrol",
+        transmission: "Manual"
+      }));
 
-        setVehicles(mappedVehicles);
-      } catch (err) {
-        console.log("Fetch vehicles error:", err);
-      }
-    };
+      setVehicles(mappedVehicles);
+    } catch (err) {
+      console.log("Fetch vehicles error:", err);
+    }
+  };
 
-    fetchVehicles();
-  }, [userId]);
+  fetchVehicles();
+}, []);
 
   // Filter logic (kept same)
   const filteredVehicles = vehicles.filter((vehicle) => {

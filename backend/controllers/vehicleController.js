@@ -19,14 +19,23 @@ exports.addVehicle = async (req, res) => {
   }
 };
 
-exports.getUserVehicles = async (req, res) => {
+// ✅ Get ALL vehicles (public marketplace)
+exports.getAllVehicles = async (req, res) => {
   try {
-    const userId = req.userId;
-
-    const vehicles = await Vehicle.find({ owner: userId });
-
+    const vehicles = await Vehicle.find().populate("owner", "name email");
     res.json({ vehicles });
   } catch (err) {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+exports.getUserVehicles = async (req, res) => {
+  try {
+    const userId = req.userId; // from auth middleware
+    const vehicles = await Vehicle.find({ owner: userId });
+    res.json({ vehicles });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
