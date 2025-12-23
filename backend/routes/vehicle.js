@@ -24,8 +24,19 @@ router.post("/add", authMiddleware, async (req, res) => {
   }
 });
 
+// 🌍 GET ALL vehicles (PUBLIC)
+router.get("/", async (req, res) => {
+  try {
+    const vehicles = await Vehicle.find().populate("owner", "name email");
+    res.json({ success: true, vehicles });
+  } catch (error) {
+    console.error("Get all vehicles error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
 // GET all vehicles for a specific user by MongoDB _id
-router.get("/user/:userId", async (req, res) => {
+/*router.get("/user/:userId", async (req, res) => {
   try {
     const { userId } = req.params;
 
@@ -36,6 +47,6 @@ router.get("/user/:userId", async (req, res) => {
     console.error("Get vehicles error:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
-});
+});*/
 
 module.exports = router;
