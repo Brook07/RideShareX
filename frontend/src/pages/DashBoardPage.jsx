@@ -1,43 +1,91 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/common/Navbar';
-import { Car, Calendar, DollarSign, Star, Settings, Mail, Phone, MapPin, Edit2, Camera, ChevronRight, Shield, CreditCard, Bell } from 'lucide-react';
+import axios from 'axios';
+import { Car, Calendar, DollarSign, Star, Mail, Phone, MapPin, ChevronRight, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 
 export default function DashboardPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
+  const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    totalBookings: 0,
+    activeRentals: 0,
+    totalSpent: 0,
+    completedBookings: 0
+  });
 
-  const stats = [
-    { icon: Car, label: 'Total Bookings', value: '12', color: 'blue' },
-    { icon: Calendar, label: 'Active Rentals', value: '2', color: 'green' },
-    { icon: DollarSign, label: 'Total Spent', value: 'NPR 45,000', color: 'purple' },
-    { icon: Star, label: 'Reviews Given', value: '8', color: 'yellow' }
-  ];
+  // Fetch real bookings from API
+  useEffect(() => {
+    fetchBookings();
+  }, []);
 
-  const recentBookings = [
-    {
-      id: 1,
-      vehicle: 'Toyota Camry 2023',
-      date: '2025-01-15 to 2025-01-18',
-      status: 'Completed',
-      amount: 'NPR 15,000'
-    },
-    {
-      id: 2,
-      vehicle: 'Honda Activa 2023',
-      date: '2025-01-20 to 2025-01-22',
-      status: 'Active',
-      amount: 'NPR 1,600'
-    },
-    {
-      id: 3,
-      vehicle: 'Hyundai Creta 2023',
-      date: '2025-01-10 to 2025-01-12',
-      status: 'Completed',
-      amount: 'NPR 14,000'
+  const fetchBookings = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get('http://localhost:5000/api/bookings/user', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      const userBookings = res.data.bookings || [];
+      setBookings(userBookings);
+      
+      // Calculate stats
+      const total = userBookings.length;
+      const active = userBookings.filter(b => b.status === 'CONFIRMED').length;
+      const completed = userBookings.filter(b => b.status === 'COMPLETED').length;
+      const totalSpent = userBookings
+        .filter(b => b.status === 'CONFIRMED' || b.status === 'COMPLETED')
+        .reduce((sum, b) => sum + (b.totalPrice || 0), 0);
+      
+      setStats({
+        totalBookings: total,
+        activeRentals: active,
+        totalSpent: totalSpent,
+        completedBookings: completed
+      });
+    } catch (err) {
+      console.error('Error fetching bookings:', err);
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const getStatusBadge = (status) => {
+    const styles = {
+      PENDING: { bg: 'bg-yellow-100', text: 'text-yellow-700', icon: Clock },
+      CONFIRMED: { bg: 'bg-green-100', text: 'text-green-700', icon: CheckCircle },
+      REJECTED: { bg: 'bg-red-100', text: 'text-red-700', icon: XCircle },
+      CANCELLED: { bg: 'bg-gray-100', text: 'text-gray-700', icon: XCircle },
+      COMPLETED: { bg: 'bg-blue-100', text: 'text-blue-700', icon: CheckCircle },
+      EXPIRED: { bg: 'bg-orange-100', text: 'text-orange-700', icon: AlertCircle }
+    };
+    const style = styles[status] || styles.PENDING;
+    const Icon = style.icon;
+    return (
+      <span className={`px-3 py-1 rounded-full text-sm font-semibold flex items-center gap-1 ${style.bg} ${style.text}`}>
+        <Icon className="w-3 h-3" />
+        {status}
+      </span>
+    );
+  };
+
+  const formatDate = (dateStr) => {
+    return new Date(dateStr).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
+  };
+
+  const statsData = [
+    { icon: Car, label: 'Total Bookings', value: stats.totalBookings, color: 'blue' },
+    { icon: Calendar, label: 'Active Rentals', value: stats.activeRentals, color: 'green' },
+    { icon: DollarSign, label: 'Total Spent', value: `NPR ${stats.totalSpent.toLocaleString()}`, color: 'purple' },
+    { icon: Star, label: 'Completed', value: stats.completedBookings, color: 'yellow' }
   ];
 
   return (
@@ -55,15 +103,11 @@ export default function DashboardPage() {
                 alt={user?.name}
                 className="w-28 h-28 rounded-full border-4 border-white shadow-lg object-cover"
               />
-              <button className="absolute bottom-0 right-0 p-2 bg-white text-blue-600 rounded-full shadow-lg hover:bg-gray-100 transition-colors">
-                <Camera className="w-4 h-4" />
-              </button>
             </div>
             
             {/* User Info */}
             <div className="flex-1 text-center md:text-left">
-              <h1 className="text-3xl font-bold mb-1">{user?.name}</h1>
-              <p className="text-blue-100 mb-3 capitalize">{user?.userType || 'Member'}</p>
+              <h1 className="text-3xl font-bold mb-3">{user?.name}</h1>
               <div className="flex flex-wrap justify-center md:justify-start gap-4 text-sm text-blue-100">
                 <span className="flex items-center gap-1">
                   <Mail className="w-4 h-4" />
@@ -83,12 +127,6 @@ export default function DashboardPage() {
                 )}
               </div>
             </div>
-
-            {/* Edit Profile Button */}
-            <button className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg flex items-center gap-2 transition-colors">
-              <Edit2 className="w-4 h-4" />
-              Edit Profile
-            </button>
           </div>
         </div>
 
@@ -96,8 +134,7 @@ export default function DashboardPage() {
         <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
           {[
             { id: 'overview', label: 'Overview', icon: Car },
-            { id: 'profile', label: 'Profile Info', icon: Settings },
-            { id: 'security', label: 'Security', icon: Shield }
+            { id: 'profile', label: 'Profile Info', icon: Mail }
           ].map((tab) => (
             <button
               key={tab.id}
@@ -119,7 +156,7 @@ export default function DashboardPage() {
           <>
             {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              {stats.map((stat, index) => (
+              {statsData.map((stat, index) => (
                 <div key={index} className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
                   <div className="flex items-center justify-between">
                     <div>
@@ -134,28 +171,54 @@ export default function DashboardPage() {
               ))}
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* Recent Bookings */}
-              <div className="lg:col-span-2 bg-white rounded-xl shadow-md p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-4">Recent Bookings</h2>
+            {/* Recent Bookings */}
+            <div className="bg-white rounded-xl shadow-md p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-4">Recent Bookings</h2>
+              
+              {loading ? (
+                <div className="flex justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-4 border-blue-500 border-t-transparent"></div>
+                </div>
+              ) : bookings.length === 0 ? (
+                <div className="text-center py-8">
+                  <Car className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                  <p className="text-gray-500">No bookings yet</p>
+                  <button
+                    onClick={() => navigate('/vehicles')}
+                    className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    Browse Vehicles
+                  </button>
+                </div>
+              ) : (
                 <div className="space-y-4">
-                  {recentBookings.map((booking) => (
-                    <div key={booking.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="font-bold text-gray-900">{booking.vehicle}</h3>
-                        <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                          booking.status === 'Active'
-                            ? 'bg-green-100 text-green-700'
-                            : 'bg-gray-100 text-gray-700'
-                        }`}>
-                          {booking.status}
-                        </span>
+                  {bookings.slice(0, 5).map((booking) => (
+                    <div key={booking._id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div className="flex items-center gap-4">
+                          {booking.vehicle?.image && (
+                            <img
+                              src={booking.vehicle.image}
+                              alt={booking.vehicle?.name}
+                              className="w-16 h-16 rounded-lg object-cover"
+                            />
+                          )}
+                          <div>
+                            <h3 className="font-bold text-gray-900">{booking.vehicle?.name || 'Vehicle'}</h3>
+                            <p className="text-gray-600 text-sm">
+                              {formatDate(booking.pickupDate)} - {formatDate(booking.dropoffDate)}
+                            </p>
+                            <p className="text-blue-600 font-bold mt-1">NPR {booking.totalPrice?.toLocaleString()}</p>
+                          </div>
+                        </div>
+                        {getStatusBadge(booking.status)}
                       </div>
-                      <p className="text-gray-600 text-sm mb-2">{booking.date}</p>
-                      <p className="text-blue-600 font-bold">{booking.amount}</p>
                     </div>
                   ))}
                 </div>
+              )}
+              
+              {bookings.length > 0 && (
                 <button
                   onClick={() => navigate('/bookings')}
                   className="w-full mt-4 px-4 py-3 border-2 border-blue-600 text-blue-600 font-bold rounded-lg hover:bg-blue-50 transition-colors flex items-center justify-center gap-2"
@@ -163,35 +226,7 @@ export default function DashboardPage() {
                   View All Bookings
                   <ChevronRight className="w-5 h-5" />
                 </button>
-              </div>
-
-              {/* Quick Actions */}
-              <div className="bg-white rounded-xl shadow-md p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-4">Quick Actions</h2>
-                <div className="space-y-3">
-                  <button
-                    onClick={() => navigate('/vehicles')}
-                    className="w-full px-4 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
-                  >
-                    <Car className="w-5 h-5" />
-                    Browse Vehicles
-                  </button>
-                  <button
-                    onClick={() => navigate('/become-host')}
-                    className="w-full px-4 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold rounded-lg hover:opacity-90 transition-colors flex items-center justify-center gap-2"
-                  >
-                    <Star className="w-5 h-5" />
-                    Become a Host
-                  </button>
-                  <button
-                    onClick={() => navigate('/rental-requests')}
-                    className="w-full px-4 py-3 bg-gray-100 text-gray-700 font-bold rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
-                  >
-                    <Bell className="w-5 h-5" />
-                    Rental Requests
-                  </button>
-                </div>
-              </div>
+              )}
             </div>
           </>
         )}
@@ -215,50 +250,6 @@ export default function DashboardPage() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">City</label>
                 <div className="px-4 py-3 bg-gray-50 rounded-lg text-gray-900">{user?.city || 'Not provided'}</div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Account Type</label>
-                <div className="px-4 py-3 bg-gray-50 rounded-lg text-gray-900 capitalize">{user?.userType || 'Member'}</div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Member Since</label>
-                <div className="px-4 py-3 bg-gray-50 rounded-lg text-gray-900">
-                  {user?.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'N/A'}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'security' && (
-          <div className="space-y-6">
-            <div className="bg-white rounded-xl shadow-md p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Account Security</h2>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                      <Shield className="w-5 h-5 text-green-600" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-900">Google Sign-In</p>
-                      <p className="text-sm text-gray-500">Connected via Google OAuth</p>
-                    </div>
-                  </div>
-                  <span className="px-3 py-1 bg-green-100 text-green-700 text-sm font-medium rounded-full">Active</span>
-                </div>
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                      <Bell className="w-5 h-5 text-blue-600" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-900">Email Notifications</p>
-                      <p className="text-sm text-gray-500">Receive booking updates</p>
-                    </div>
-                  </div>
-                  <span className="px-3 py-1 bg-blue-100 text-blue-700 text-sm font-medium rounded-full">Enabled</span>
-                </div>
               </div>
             </div>
           </div>
