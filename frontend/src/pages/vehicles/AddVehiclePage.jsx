@@ -5,9 +5,9 @@ import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/common/Navbar";
 
-// 🔹 Cloudinary Configuration
-const CLOUD_NAME = "dtgrovkrh";
-const UPLOAD_PRESET = "react_uploads"; // Your upload preset name
+// 🔹 Cloudinary Configuration (from environment variables)
+const CLOUD_NAME = process.env.REACT_APP_CLOUDINARY_CLOUD_NAME;
+const UPLOAD_PRESET = process.env.REACT_APP_CLOUDINARY_UPLOAD_PRESET;
 
 export default function AddVehiclePage() {
   const [vehicleData, setVehicleData] = useState({
