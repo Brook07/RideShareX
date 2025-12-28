@@ -7,6 +7,11 @@ import LandingPage from './pages/LandingPage';
 import VehiclesPage from './pages/VehiclesPage';
 import DashboardPage from './pages/DashBoardPage';
 import AddVehiclePage from './pages/vehicles/AddVehiclePage';
+import BookNowPage from './pages/vehicles/BookNowPage';
+import BecomeHostPage from './pages/vehicles/BecomeHostPage';
+import ManageVehiclesPage from './pages/vehicles/ManageVehiclesPage';
+import MyBookingsPage from './pages/bookings/MyBookingsPage';
+import RentalRequestsPage from './pages/bookings/RentalRequestsPage';
 import './styles/animations.css';
 
 // Protected Route Component
@@ -69,6 +74,48 @@ function AppRoutes() {
 <Route path="/AddVehicle" element={
         <ProtectedRoute>
           <AddVehiclePage />
+        </ProtectedRoute>
+      } />
+
+      <Route path="/add-vehicle" element={
+        <ProtectedRoute>
+          <AddVehiclePage />
+        </ProtectedRoute>
+      } />
+
+      <Route path="/become-host" element={
+        <ProtectedRoute>
+          <BecomeHostPage />
+        </ProtectedRoute>
+      } />
+
+      <Route path="/manage-vehicles" element={
+        <ProtectedRoute>
+          <ManageVehiclesPage />
+        </ProtectedRoute>
+      } />
+
+      <Route path="/book-now" element={
+        <ProtectedRoute>
+          <BookNowPage />
+        </ProtectedRoute>
+      } />
+
+      <Route path="/my-bookings" element={
+        <ProtectedRoute>
+          <MyBookingsPage />
+        </ProtectedRoute>
+      } />
+
+      <Route path="/bookings" element={
+        <ProtectedRoute>
+          <MyBookingsPage />
+        </ProtectedRoute>
+      } />
+
+      <Route path="/rental-requests" element={
+        <ProtectedRoute>
+          <RentalRequestsPage />
         </ProtectedRoute>
       } />
 

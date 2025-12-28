@@ -4,6 +4,7 @@ const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/auth');
 const vehicleRoutes = require("./routes/vehicle");
+const bookingRoutes = require("./routes/booking");
 
 
 dotenv.config();
@@ -25,7 +26,8 @@ app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.use('/api/auth', authRoutes);
-app.use('/api/vehicles', vehicleRoutes);   // ✅ Use imported route
+app.use('/api/vehicles', vehicleRoutes);
+app.use('/api/bookings', bookingRoutes);
 
 // Health check route
 app.get('/api/health', (req, res) => {
