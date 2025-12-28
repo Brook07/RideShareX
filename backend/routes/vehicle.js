@@ -7,14 +7,27 @@ const authMiddleware = require("../middleware/auth");
 router.post("/add", authMiddleware, async (req, res) => {
   try {
     const userId = req.userId; // 🔥 Comes from token (middleware)
+    const { name, make, model, year, seats, location, fuelType, image } = req.body;
+
+    // Validation
+    if (!name || !make || !model || !year || !seats || !location || !fuelType) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
 
     const vehicle = await Vehicle.create({
-      name: req.body.name,
-      owner: userId   // 🔥 THIS IS THE FIX
+      name,
+      make,
+      model,
+      year,
+      seats,
+      location,
+      fuelType,
+      image: image || '/photos/default-car.jpg',
+      owner: userId
     });
 
     res.status(201).json({
-      message: "Vehicle saved",
+      message: "Vehicle added successfully",
       vehicle
     });
 
@@ -24,13 +37,82 @@ router.post("/add", authMiddleware, async (req, res) => {
   }
 });
 
-// 🌍 GET ALL vehicles (PUBLIC)
+// 🌍 GET ALL vehicles (PUBLIC) - Only active vehicles
 router.get("/", async (req, res) => {
   try {
-    const vehicles = await Vehicle.find().populate("owner", "name email");
+    const vehicles = await Vehicle.find({ status: "active" }).populate("owner", "name email");
     res.json({ success: true, vehicles });
   } catch (error) {
     console.error("Get all vehicles error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+// 🔐 GET current user's vehicles (PROTECTED) - All statuses
+router.get("/my-vehicles", authMiddleware, async (req, res) => {
+  try {
+    const userId = req.userId;
+    const vehicles = await Vehicle.find({ owner: userId });
+    res.json({ success: true, vehicles });
+  } catch (error) {
+    console.error("Get user vehicles error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+// 🔐 UPDATE vehicle status (PROTECTED)
+router.patch("/:vehicleId/status", authMiddleware, async (req, res) => {
+  try {
+    const { vehicleId } = req.params;
+    const { status } = req.body;
+    const userId = req.userId;
+
+    // Validate status
+    if (!['active', 'inactive'].includes(status)) {
+      return res.status(400).json({ message: "Invalid status" });
+    }
+
+    // Find vehicle and verify ownership
+    const vehicle = await Vehicle.findById(vehicleId);
+    
+    if (!vehicle) {
+      return res.status(404).json({ message: "Vehicle not found" });
+    }
+
+    if (vehicle.owner.toString() !== userId) {
+      return res.status(403).json({ message: "Not authorized to update this vehicle" });
+    }
+
+    vehicle.status = status;
+    await vehicle.save();
+
+    res.json({ success: true, message: "Status updated", vehicle });
+  } catch (error) {
+    console.error("Update status error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+// 🔐 DELETE vehicle (PROTECTED)
+router.delete("/:vehicleId", authMiddleware, async (req, res) => {
+  try {
+    const { vehicleId } = req.params;
+    const userId = req.userId;
+
+    const vehicle = await Vehicle.findById(vehicleId);
+    
+    if (!vehicle) {
+      return res.status(404).json({ message: "Vehicle not found" });
+    }
+
+    if (vehicle.owner.toString() !== userId) {
+      return res.status(403).json({ message: "Not authorized to delete this vehicle" });
+    }
+
+    await Vehicle.findByIdAndDelete(vehicleId);
+    res.json({ success: true, message: "Vehicle deleted" });
+  } catch (error) {
+    console.error("Delete vehicle error:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 });

@@ -27,16 +27,20 @@ useEffect(() => {
         name: v.name,
         plateNumber: v.plateNumber || "N/A",
         owner: v.owner,
-
+        make: v.make,
+        model: v.model,
+        year: v.year,
         type: "car",
-        image:
-          "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=500",
+        // 🔹 Use actual image from Cloudinary, fallback to default
+        image: v.image && v.image !== '/photos/default-car.jpg' 
+          ? v.image 
+          : "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=500",
         price: 2000,
-        location: "Kathmandu",
+        location: v.location || "Kathmandu",
         rating: 4.5,
         reviews: 50,
-        seats: 4,
-        fuel: "Petrol",
+        seats: v.seats || 4,
+        fuel: v.fuelType || "Petrol",
         transmission: "Manual"
       }));
 
