@@ -17,7 +17,8 @@ export default function AddVehiclePage() {
     year: "",
     seats: "",
     location: "",
-    fuelType: ""
+    fuelType: "",
+    pricePerDay: ""
   });
   
   // 🔹 Image upload states
@@ -76,7 +77,7 @@ export default function AddVehiclePage() {
     // Validation
     if (!vehicleData.name || !vehicleData.make || !vehicleData.model || 
         !vehicleData.year || !vehicleData.seats || !vehicleData.location || 
-        !vehicleData.fuelType) {
+        !vehicleData.fuelType || vehicleData.pricePerDay === "") {
       return alert("Please fill all required fields");
     }
 
@@ -100,6 +101,7 @@ export default function AddVehiclePage() {
         ...vehicleData,
         year: parseInt(vehicleData.year),
         seats: parseInt(vehicleData.seats),
+        pricePerDay: parseFloat(vehicleData.pricePerDay),
         image: imageUrl
       }, {
         headers: {
@@ -118,7 +120,8 @@ export default function AddVehiclePage() {
         year: "",
         seats: "",
         location: "",
-        fuelType: ""
+        fuelType: "",
+        pricePerDay: ""
       });
       setImageFile(null);
       setImagePreview(null);
@@ -274,6 +277,24 @@ export default function AddVehiclePage() {
                 <option value="Hybrid">Hybrid</option>
                 <option value="CNG">CNG</option>
               </select>
+            </div>
+
+            {/* Price Per Day */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Price Per Day (₹) <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="number"
+                name="pricePerDay"
+                placeholder="e.g., 1500"
+                min="0"
+                step="0.5"
+                value={vehicleData.pricePerDay}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                required
+              />
             </div>
 
             {/* 🔹 Vehicle Image Upload */}

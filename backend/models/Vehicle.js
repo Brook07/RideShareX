@@ -35,6 +35,11 @@ const vehicleSchema = new mongoose.Schema({
     type: String,
     default: '/photos/default-car.jpg'
   },
+  pricePerDay: {
+    type: Number,
+    required: true,
+    min: 0
+  },
   owner: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
