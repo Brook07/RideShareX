@@ -1,30 +1,38 @@
 const express = require("express");
 const router = express.Router();
 const Vehicle = require("../models/Vehicle");
+const User = require("../models/User");
 const authMiddleware = require("../middleware/auth");
 
 // Add vehicle (PROTECTED)
 router.post("/add", authMiddleware, async (req, res) => {
   try {
     const userId = req.userId; // 🔥 Comes from token (middleware)
-    const { name, make, model, year, seats, location, fuelType, image } = req.body;
+        const { name, make, model, year, seats, location, fuelType, image, pricePerDay, type } = req.body;
 
-    // Validation
-    if (!name || !make || !model || !year || !seats || !location || !fuelType) {
-      return res.status(400).json({ message: "All fields are required" });
-    }
+        // Validation
+        if (!name || !make || !model || !year || !seats || !location || !fuelType || pricePerDay === undefined || !type) {
+          return res.status(400).json({ message: "All fields are required including pricePerDay and type" });
+        }
 
-    const vehicle = await Vehicle.create({
-      name,
-      make,
-      model,
-      year,
-      seats,
-      location,
-      fuelType,
-      image: image || '/photos/default-car.jpg',
-      owner: userId
-    });
+        // Get owner location from user profile to support location-based filtering later
+        const owner = await User.findById(userId).lean();
+        const ownerLocation = owner?.city || owner?.address || null;
+
+        const vehicle = await Vehicle.create({
+          name,
+          make,
+          model,
+          year,
+          seats,
+          location,
+          fuelType,
+          pricePerDay,
+          type,
+          image: image || '/photos/default-car.jpg',
+          owner: userId,
+          ownerLocation
+        });
 
     res.status(201).json({
       message: "Vehicle added successfully",
