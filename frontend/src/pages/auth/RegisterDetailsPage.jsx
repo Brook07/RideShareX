@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Car, Bike, Truck, ArrowRight, Phone, MapPin } from 'lucide-react';
+import { Car, Bike, Truck, ArrowRight, Phone } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import AuthLayout from '../../components/auth/AuthLayout';
@@ -11,9 +11,7 @@ export default function RegisterDetailsPage() {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     phone: '',
-    address: '',
     city: ''
-    // Removed userType - no longer needed in registration
   });
 
   const slides = [
@@ -38,7 +36,7 @@ export default function RegisterDetailsPage() {
   ];
 
   const handleSubmit = async () => {
-    if (!formData.phone || !formData.address || !formData.city) {
+    if (!formData.phone || !formData.city) {
       alert('Please fill in all fields');
       return;
     }
@@ -118,22 +116,7 @@ export default function RegisterDetailsPage() {
             </div>
           </div>
 
-          {/* Address */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Street Address
-            </label>
-            <div className="relative">
-              <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                type="text"
-                value={formData.address}
-                onChange={(e) => handleInputChange('address', e.target.value)}
-                placeholder="Thamel, Kathmandu"
-                className="w-full pl-12 pr-4 py-3.5 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition-all text-gray-800 placeholder-gray-400"
-              />
-            </div>
-          </div>
+          {/* Address removed — only city is required now */}
 
           {/* City */}
           <div>

@@ -31,14 +31,28 @@ const vehicleSchema = new mongoose.Schema({
     required: true,
     enum: ['Petrol', 'Diesel', 'Electric', 'Hybrid', 'CNG']
   },
+  type: {
+    type: String,
+    enum: ['car', 'bike', 'scooter'],
+    default: 'car'
+  },
   image: {
     type: String,
     default: '/photos/default-car.jpg'
+  },
+  pricePerDay: {
+    type: Number,
+    required: true,
+    min: 0
   },
   owner: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
     required: true
+  },
+  ownerLocation: {
+    type: String,
+    default: null
   },
   plateNumber: {
     type: String,

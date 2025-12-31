@@ -5,9 +5,9 @@ import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/common/Navbar";
 
-// 🔹 Cloudinary Configuration
-const CLOUD_NAME = "dtgrovkrh";
-const UPLOAD_PRESET = "react_uploads"; // Your upload preset name
+// 🔹 Cloudinary Configuration (from environment variables)
+const CLOUD_NAME = process.env.REACT_APP_CLOUDINARY_CLOUD_NAME;
+const UPLOAD_PRESET = process.env.REACT_APP_CLOUDINARY_UPLOAD_PRESET;
 
 export default function AddVehiclePage() {
   const [vehicleData, setVehicleData] = useState({
@@ -17,7 +17,9 @@ export default function AddVehiclePage() {
     year: "",
     seats: "",
     location: "",
-    fuelType: ""
+    type: "",
+    fuelType: "",
+    pricePerDay: ""
   });
   
   // 🔹 Image upload states
@@ -76,7 +78,7 @@ export default function AddVehiclePage() {
     // Validation
     if (!vehicleData.name || !vehicleData.make || !vehicleData.model || 
         !vehicleData.year || !vehicleData.seats || !vehicleData.location || 
-        !vehicleData.fuelType) {
+        !vehicleData.type || !vehicleData.fuelType || vehicleData.pricePerDay === "") {
       return alert("Please fill all required fields");
     }
 
@@ -100,6 +102,7 @@ export default function AddVehiclePage() {
         ...vehicleData,
         year: parseInt(vehicleData.year),
         seats: parseInt(vehicleData.seats),
+        pricePerDay: parseFloat(vehicleData.pricePerDay),
         image: imageUrl
       }, {
         headers: {
@@ -118,7 +121,9 @@ export default function AddVehiclePage() {
         year: "",
         seats: "",
         location: "",
-        fuelType: ""
+        type: "",
+        fuelType: "",
+        pricePerDay: ""
       });
       setImageFile(null);
       setImagePreview(null);
@@ -239,23 +244,47 @@ export default function AddVehiclePage() {
               </div>
             </div>
 
-            {/* Location */}
+            {/* Location (city dropdown) */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Location <span className="text-red-500">*</span>
               </label>
-              <input
-                type="text"
+              <select
                 name="location"
-                placeholder="e.g., Mumbai, Maharashtra"
                 value={vehicleData.location}
                 onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition bg-white"
                 required
-              />
+              >
+                <option value="">Select your city</option>
+                <option value="Kathmandu">Kathmandu</option>
+                <option value="Pokhara">Pokhara</option>
+                <option value="Dhulikhel">Dhulikhel</option>
+                <option value="Banepa">Banepa</option>
+                <option value="Bhaktapur">Bhaktapur</option>
+                <option value="Lalitpur">Lalitpur</option>
+              </select>
             </div>
 
             {/* Fuel Type */}
+            {/* Vehicle Type */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Vehicle Type <span className="text-red-500">*</span>
+              </label>
+              <select
+                name="type"
+                value={vehicleData.type}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition bg-white mb-4"
+                required
+              >
+                <option value="">Select type</option>
+                <option value="car">Car</option>
+                <option value="bike">Bike</option>
+                <option value="scooter">Scooter</option>
+              </select>
+            </div>
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Fuel Type <span className="text-red-500">*</span>
@@ -274,6 +303,24 @@ export default function AddVehiclePage() {
                 <option value="Hybrid">Hybrid</option>
                 <option value="CNG">CNG</option>
               </select>
+            </div>
+
+            {/* Price Per Day */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Price Per Day (₹) <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="number"
+                name="pricePerDay"
+                placeholder="e.g., 1500"
+                min="0"
+                step="0.5"
+                value={vehicleData.pricePerDay}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                required
+              />
             </div>
 
             {/* 🔹 Vehicle Image Upload */}
