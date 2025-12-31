@@ -5,8 +5,8 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 import AuthLayout from '../../components/auth/AuthLayout';
 import GoogleLoginButton from '../../components/auth/GoogleLoginButton';
 import { useAuth } from '../../context/AuthContext';
-import TermsOfService from './TermsOfService';
-import PrivacyPolicy from './PrivacyPolicy';
+import TermsOfService from '../../components/common/TermsOfService';
+import PrivacyPolicy from '../../components/common/PrivacyPolicy';
 import Modal from '../../components/common/Modal';
 
 export default function LoginPage() {

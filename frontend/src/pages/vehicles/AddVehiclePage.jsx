@@ -17,6 +17,7 @@ export default function AddVehiclePage() {
     year: "",
     seats: "",
     location: "",
+    type: "",
     fuelType: "",
     pricePerDay: ""
   });
@@ -77,7 +78,7 @@ export default function AddVehiclePage() {
     // Validation
     if (!vehicleData.name || !vehicleData.make || !vehicleData.model || 
         !vehicleData.year || !vehicleData.seats || !vehicleData.location || 
-        !vehicleData.fuelType || vehicleData.pricePerDay === "") {
+        !vehicleData.type || !vehicleData.fuelType || vehicleData.pricePerDay === "") {
       return alert("Please fill all required fields");
     }
 
@@ -120,6 +121,7 @@ export default function AddVehiclePage() {
         year: "",
         seats: "",
         location: "",
+        type: "",
         fuelType: "",
         pricePerDay: ""
       });
@@ -242,23 +244,47 @@ export default function AddVehiclePage() {
               </div>
             </div>
 
-            {/* Location */}
+            {/* Location (city dropdown) */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Location <span className="text-red-500">*</span>
               </label>
-              <input
-                type="text"
+              <select
                 name="location"
-                placeholder="e.g., Mumbai, Maharashtra"
                 value={vehicleData.location}
                 onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition bg-white"
                 required
-              />
+              >
+                <option value="">Select your city</option>
+                <option value="Kathmandu">Kathmandu</option>
+                <option value="Pokhara">Pokhara</option>
+                <option value="Dhulikhel">Dhulikhel</option>
+                <option value="Banepa">Banepa</option>
+                <option value="Bhaktapur">Bhaktapur</option>
+                <option value="Lalitpur">Lalitpur</option>
+              </select>
             </div>
 
             {/* Fuel Type */}
+            {/* Vehicle Type */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Vehicle Type <span className="text-red-500">*</span>
+              </label>
+              <select
+                name="type"
+                value={vehicleData.type}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition bg-white mb-4"
+                required
+              >
+                <option value="">Select type</option>
+                <option value="car">Car</option>
+                <option value="bike">Bike</option>
+                <option value="scooter">Scooter</option>
+              </select>
+            </div>
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Fuel Type <span className="text-red-500">*</span>

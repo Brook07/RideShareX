@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
-import { Calendar, Users, Fuel, Settings, ArrowLeft, MessageSquare, CheckCircle, Clock } from 'lucide-react';
+import { Calendar, Users, Fuel, Settings, ArrowLeft, MessageSquare, CheckCircle, Clock, MapPin } from 'lucide-react';
 import Navbar from '../../components/common/Navbar';
 
 export default function BookNowPage() {
@@ -35,7 +35,7 @@ export default function BookNowPage() {
     ? vehicle.image
     : "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=800&q=80";
 
-  const pricePerDay = vehicle?.price || 2000;
+  const pricePerDay = (vehicle?.pricePerDay !== undefined && vehicle?.pricePerDay !== null) ? vehicle.pricePerDay : (vehicle?.price || 2000);
 
   useEffect(() => {
     calculatePrice();
@@ -188,9 +188,15 @@ export default function BookNowPage() {
                 </div>
                 <div className="p-6">
                   <h2 className="text-2xl font-bold text-gray-900 mb-2">{vehicle.name}</h2>
-                  <p className="text-gray-600 mb-4">
+                  <p className="text-gray-600 mb-2">
                     {vehicle.make} {vehicle.model} • {vehicle.year}
                   </p>
+                  {vehicle.location && (
+                    <p className="text-sm text-gray-500 mb-4 flex items-center gap-2">
+                      <MapPin size={16} />
+                      <span>{vehicle.location}</span>
+                    </p>
+                  )}
                   
                   {/* Vehicle Specs */}
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
