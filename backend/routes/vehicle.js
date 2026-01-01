@@ -8,7 +8,7 @@ const authMiddleware = require("../middleware/auth");
 router.post("/add", authMiddleware, async (req, res) => {
   try {
     const userId = req.userId; // 🔥 Comes from token (middleware)
-        const { name, make, model, year, seats, location, fuelType, image, pricePerDay, type } = req.body;
+        const { name, make, model, year, seats, location, fuelType, image, pricePerDay, type, plateNumber } = req.body;
 
         // Validation
         if (!name || !make || !model || !year || !seats || !location || !fuelType || pricePerDay === undefined || !type) {
@@ -30,6 +30,7 @@ router.post("/add", authMiddleware, async (req, res) => {
           pricePerDay,
           type,
           image: image || '/photos/default-car.jpg',
+          plateNumber: plateNumber || null,
           owner: userId,
           ownerLocation
         });

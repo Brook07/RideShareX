@@ -41,15 +41,14 @@ export default function SearchBar({ onSearch }) {
               onKeyPress={handleKeyPress}
               className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all appearance-none bg-white text-gray-800"
             >
-              <option value="">Select location</option>
-              <option value="kathmandu">Kathmandu</option>
-              <option value="pokhara">Pokhara</option>
-              <option value="lalitpur">Lalitpur</option>
-              <option value="bhaktapur">Bhaktapur</option>
-              <option value="biratnagar">Biratnagar</option>
-              <option value="birgunj">Birgunj</option>
-              <option value="dharan">Dharan</option>
-              <option value="bharatpur">Bharatpur</option>
+              <option value="">All Locations</option>
+                  <option value="Kathmandu">Kathmandu</option>
+                  <option value="Pokhara">Pokhara</option>
+                  <option value="Dhulikhel">Dhulikhel</option>
+                  <option value="Banepa">Banepa</option>
+                  <option value="Bhaktapur">Bhaktapur</option>
+                  <option value="Lalitpur">Lalitpur</option>
+  
             </select>
           </div>
         </div>

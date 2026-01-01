@@ -44,8 +44,8 @@ exports.createBooking = async (req, res) => {
       return res.status(400).json({ message: "Vehicle is already booked for these dates" });
     }
 
-    // Calculate expiration time (5 hours from now)
-    const expiresAt = new Date(Date.now() + 5 * 60 * 60 * 1000);
+    // Calculate expiration time (5 minutes from now)
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
 
     // Create booking
     const booking = await Booking.create({

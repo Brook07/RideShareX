@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
-import { Calendar, Users, Fuel, Settings, ArrowLeft, MessageSquare, CheckCircle, Clock, MapPin } from 'lucide-react';
+import { Calendar, Users, Fuel, Settings, ArrowLeft, MessageSquare, CheckCircle, Clock, MapPin, Star } from 'lucide-react';
 import Navbar from '../../components/common/Navbar';
 
 export default function BookNowPage() {
@@ -147,7 +147,7 @@ export default function BookNowPage() {
             </p>
             <div className="flex items-center justify-center gap-2 text-orange-600 mb-6">
               <Clock className="w-5 h-5" />
-              <span className="text-sm">The owner has 5 hours to respond</span>
+              <span className="text-sm">The owner has 5 minutes to respond</span>
             </div>
             <p className="text-sm text-gray-500">Redirecting to your bookings...</p>
           </div>
@@ -192,11 +192,30 @@ export default function BookNowPage() {
                     {vehicle.make} {vehicle.model} • {vehicle.year}
                   </p>
                   {vehicle.location && (
-                    <p className="text-sm text-gray-500 mb-4 flex items-center gap-2">
+                    <p className="text-sm text-gray-500 mb-2 flex items-center gap-2">
                       <MapPin size={16} />
                       <span>{vehicle.location}</span>
                     </p>
                   )}
+                  {vehicle.plateNumber && (
+                    <p className="text-sm text-gray-500 mb-4">
+                      Plate Number: <span className="font-medium text-gray-700">{vehicle.plateNumber}</span>
+                    </p>
+                  )}
+                  
+                  {/* Rating and Bookings Info */}
+                  <div className="flex items-center gap-4 mb-4 pb-4 border-b">
+                    <div className="flex items-center gap-1">
+                      <Star className={`w-5 h-5 ${vehicle.rating > 0 ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} />
+                      <span className="text-sm font-semibold">{vehicle.rating ? vehicle.rating.toFixed(1) : '0.0'}</span>
+                      <span className="text-xs text-gray-500">
+                        ({vehicle.totalRatings || 0} {(vehicle.totalRatings || 0) === 1 ? 'rating' : 'ratings'})
+                      </span>
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      {vehicle.completedBookings === 0 ? 'New listing' : `${vehicle.completedBookings} ${vehicle.completedBookings === 1 ? 'trip' : 'trips'} completed`}
+                    </div>
+                  </div>
                   
                   {/* Vehicle Specs */}
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
@@ -260,20 +279,6 @@ export default function BookNowPage() {
                 </div>
               </div>
 
-              {/* Message to Owner */}
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                  <MessageSquare size={24} />
-                  Message to Owner (Optional)
-                </h3>
-                <textarea
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  placeholder="Introduce yourself and let the owner know about your trip plans..."
-                  rows={4}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                />
-              </div>
             </div>
 
             {/* Right Column - Price Summary */}
@@ -303,7 +308,7 @@ export default function BookNowPage() {
                     <div>
                       <p className="text-sm font-medium text-orange-800">Approval Required</p>
                       <p className="text-xs text-orange-600">
-                        The owner has 5 hours to approve or reject your booking request
+                        The owner has 5 minutes to approve or reject your booking request
                       </p>
                     </div>
                   </div>

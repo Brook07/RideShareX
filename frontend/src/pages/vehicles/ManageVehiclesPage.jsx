@@ -208,6 +208,7 @@ export default function ManageVehiclesPage() {
                   <p className="text-gray-600 text-sm mb-3">
                     {vehicle.make} {vehicle.model} • {vehicle.year}
                   </p>
+                  <p className="text-gray-500 text-sm mb-3">Plate: {vehicle.plateNumber || '—'}</p>
 
                   {/* Details Grid */}
                   <div className="grid grid-cols-3 gap-3 mb-4">

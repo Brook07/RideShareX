@@ -103,11 +103,11 @@ router.post('/google-login', async (req, res) => {
 // @access  Private
 router.post('/complete-profile', authMiddleware, async (req, res) => {
   try {
-    const { phone, address, city } = req.body;
+    const { phone, city } = req.body;
 
-    // Validate input - removed userType
-    if (!phone || !address || !city) {
-      return res.status(400).json({ message: 'All fields are required' });
+    // Validate input
+    if (!phone || !city) {
+      return res.status(400).json({ message: 'Phone and city are required' });
     }
 
     // Find user and update
@@ -119,7 +119,6 @@ router.post('/complete-profile', authMiddleware, async (req, res) => {
 
     // Update profile
     user.phone = phone;
-    user.address = address;
     user.city = city;
     user.isProfileComplete = true;
 

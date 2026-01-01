@@ -54,7 +54,7 @@ const bookingSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   },
-  // When the booking request expires (5 hours from creation)
+  // When the booking request expires (5 minutes from creation)
   expiresAt: {
     type: Date,
     required: true
