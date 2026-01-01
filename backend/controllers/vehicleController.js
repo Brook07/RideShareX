@@ -1,13 +1,13 @@
-const Vehicle = require("../models/vehicleModel");
+const Vehicle = require("../models/Vehicle");
 
 exports.addVehicle = async (req, res) => {
   try {
     const userId = req.userId; // from middleware
-    const { name, make, model, year, seats, location, fuelType, image } = req.body;
+    const { name, make, model, year, seats, location, fuelType, image, plateNumber, pricePerDay, type } = req.body;
 
     // Validation
-    if (!name || !make || !model || !year || !seats || !location || !fuelType) {
-      return res.status(400).json({ message: "All fields are required" });
+    if (!name || !make || !model || !year || !seats || !location || !fuelType || pricePerDay === undefined || !type) {
+      return res.status(400).json({ message: "All fields are required including pricePerDay and type" });
     }
 
     const newVehicle = await Vehicle.create({
@@ -19,7 +19,10 @@ exports.addVehicle = async (req, res) => {
       seats,
       location,
       fuelType,
-      image: image || '/photos/default-car.jpg'
+      image: image || '/photos/default-car.jpg',
+      plateNumber: plateNumber || null,
+      pricePerDay,
+      type
     });
 
     res.status(201).json({

@@ -8,6 +8,7 @@ import {
   Users,
   Fuel,
   Settings,
+  Search,
   Star
 } from "lucide-react";
 
@@ -16,6 +17,9 @@ export default function VehiclesPage() {
   const navigate = useNavigate();
   const [vehicles, setVehicles] = useState([]);
   const [searchParams, setSearchParams] = useState(location.state || {});
+  const [sortBy, setSortBy] = useState('recommended');
+  const [searchLocation, setSearchLocation] = useState('');
+  const [searchVehicleType, setSearchVehicleType] = useState('all');
 
 useEffect(() => {
   const fetchVehicles = async () => {
@@ -25,7 +29,7 @@ useEffect(() => {
       const mappedVehicles = res.data.vehicles.map((v) => ({
         id: v._id,
         name: v.name,
-        plateNumber: v.plateNumber || "N/A",
+        plateNumber: v.plateNumber || null,
         owner: v.owner,
         ownerName: v.owner?.name || (typeof v.owner === 'string' ? v.owner : 'Unknown'),
         ownerEmail: v.owner?.email || '',
@@ -42,8 +46,9 @@ useEffect(() => {
         status: v.status || 'active',
         createdAt: v.createdAt,
         location: v.location || v.ownerLocation || "Kathmandu",
-        rating: 4.5,
-        reviews: 50,
+        rating: v.rating || 0,
+        totalRatings: v.totalRatings || 0,
+        completedBookings: v.completedBookings || 0,
         seats: v.seats || 4,
         fuel: v.fuelType || "Petrol",
         transmission: "Manual"
@@ -58,12 +63,39 @@ useEffect(() => {
   fetchVehicles();
 }, []);
 
-  // Filter logic (kept same)
+  // Filter logic with search
   const filteredVehicles = vehicles.filter((vehicle) => {
-    if (searchParams.vehicleType && searchParams.vehicleType !== "all") {
-      return vehicle.type === searchParams.vehicleType;
+    // Location filter
+    if (searchLocation && searchLocation !== "all" && vehicle.location !== searchLocation) {
+      return false;
     }
+    
+    // Vehicle type filter
+    if (searchVehicleType && searchVehicleType !== "all" && vehicle.type !== searchVehicleType) {
+      return false;
+    }
+    
+    // Legacy filter from search params
+    if (searchParams.vehicleType && searchParams.vehicleType !== "all" && vehicle.type !== searchParams.vehicleType) {
+      return false;
+    }
+    
     return true;
+  });
+
+  // Sorting logic
+  const sortedVehicles = [...filteredVehicles].sort((a, b) => {
+    switch(sortBy) {
+      case 'price-low':
+        return a.pricePerDay - b.pricePerDay;
+      case 'price-high':
+        return b.pricePerDay - a.pricePerDay;
+      case 'rating':
+        return b.rating - a.rating;
+      case 'recommended':
+      default:
+        return 0;
+    }
   });
 
   return (
@@ -87,44 +119,88 @@ useEffect(() => {
 
       {/* Filters & Results */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Search Bar */}
+        <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Location Search */}
+            <div className="relative">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Location
+              </label>
+              <div className="relative">
+                <MapPin className="absolute left-3 top-3 w-5 h-5 text-gray-400 pointer-events-none z-10" />
+                <select
+                  value={searchLocation}
+                  onChange={(e) => setSearchLocation(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none bg-white appearance-none"
+                >
+                  <option value="">All Locations</option>
+                  <option value="Kathmandu">Kathmandu</option>
+                  <option value="Pokhara">Pokhara</option>
+                  <option value="Dhulikhel">Dhulikhel</option>
+                  <option value="Banepa">Banepa</option>
+                  <option value="Bhaktapur">Bhaktapur</option>
+                  <option value="Lalitpur">Lalitpur</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Vehicle Type */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Vehicle Type
+              </label>
+              <div className="relative">
+                <Car className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                <select
+                  value={searchVehicleType}
+                  onChange={(e) => setSearchVehicleType(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none bg-white appearance-none"
+                >
+                  <option value="all">All Types</option>
+                  <option value="car">Car</option>
+                  <option value="bike">Bike</option>
+                  <option value="scooter">Scooter</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Sort By */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Sort By
+              </label>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none bg-white"
+              >
+                <option value="recommended">Recommended</option>
+                <option value="price-low">Price: Low to High</option>
+                <option value="price-high">Price: High to Low</option>
+                <option value="rating">Rating: High to Low</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
         <div className="flex items-center justify-between mb-8">
           <p className="text-gray-600">
             Found{" "}
             <span className="font-bold text-gray-900">
-              {filteredVehicles.length}
+              {sortedVehicles.length}
             </span>{" "}
             vehicles
           </p>
-
-          <div className="flex items-center gap-4">
-            <div className="hidden sm:flex items-center gap-2 bg-white rounded-lg shadow-sm p-1">
-              {['all','car','bike','scooter'].map((t) => (
-                <button
-                  key={t}
-                  onClick={() => setSearchParams({ ...searchParams, vehicleType: t })}
-                  className={`px-3 py-2 rounded-md text-sm font-medium ${searchParams.vehicleType === t ? 'bg-blue-600 text-white' : 'text-gray-700 hover:bg-gray-100'}`}
-                >
-                  {t === 'all' ? 'All' : t.charAt(0).toUpperCase() + t.slice(1)}
-                </button>
-              ))}
-            </div>
-
-            <select className="px-4 py-2 border border-gray-300 rounded-lg">
-              <option>Sort by: Recommended</option>
-              <option>Price: Low to High</option>
-              <option>Price: High to Low</option>
-              <option>Rating: High to Low</option>
-            </select>
-          </div>
         </div>
 
         {/* Vehicle Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredVehicles.map((vehicle) => (
+          {sortedVehicles.map((vehicle) => (
             <div
               key={vehicle.id}
               className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer"
-              onClick={() => navigate(`/vehicle/${vehicle.id}`)}
+              onClick={() => navigate('/book-now', { state: { vehicle } })}
             >
               {/* Image */}
               <div className="relative h-48 overflow-hidden">
@@ -153,15 +229,21 @@ useEffect(() => {
                   <span>{vehicle.location}</span>
                 </div>
 
-                <div className="flex items-center justify-between mb-4">
-                  <div className="text-xs text-gray-500">
-                      <div>Plate: {vehicle.plateNumber}</div>
+                <div className="mb-4 space-y-1">
+                  {vehicle.plateNumber && (
+                    <p className="text-sm text-gray-500">
+                      Plate: <span className="font-medium text-gray-700">{vehicle.plateNumber}</span>
+                    </p>
+                  )}
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-1">
+                      <Star className={`w-4 h-4 ${vehicle.rating > 0 ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} />
+                      <span className="text-sm font-semibold">{vehicle.rating.toFixed(1)}</span>
+                      <span className="text-xs text-gray-500">({vehicle.totalRatings} {vehicle.totalRatings === 1 ? 'rating' : 'ratings'})</span>
                     </div>
-
-                  <div className="flex items-center">
-                    <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                    <span className="ml-1 text-sm font-semibold">{vehicle.rating}</span>
-                    <span className="ml-1 text-sm text-gray-500">({vehicle.reviews})</span>
+                    <div className="text-xs text-gray-500">
+                      {vehicle.completedBookings === 0 ? 'New listing' : `${vehicle.completedBookings} ${vehicle.completedBookings === 1 ? 'trip' : 'trips'}`}
+                    </div>
                   </div>
                 </div>
 

@@ -44,7 +44,10 @@ export default function RegisterDetailsPage() {
     setLoading(true);
 
     try {
-      const response = await axios.post('/api/auth/complete-profile', formData);
+      const token = localStorage.getItem('token');
+      const response = await axios.post('http://localhost:5000/api/auth/complete-profile', formData, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       
       console.log('✅ Profile completed:', response.data);
       
@@ -102,21 +105,19 @@ export default function RegisterDetailsPage() {
             <div className="relative">
               <Phone className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
-              type="tel"
-              value={formData.phone}
-              onChange={(e) => {
-              let value = e.target.value.replace(/\D/g, ""); // allow digits only
-              if (value.length > 10) value = value.slice(0, 10); // limit to 10
-              handleInputChange("phone", value);
-      }}
-      maxLength={10}
-      placeholder="9800000000"
-      className="w-full pl-12 pr-4 py-3.5 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition-all text-gray-800 placeholder-gray-400"
-    />
+                type="tel"
+                value={formData.phone}
+                onChange={(e) => {
+                  let value = e.target.value.replace(/\D/g, "");
+                  if (value.length > 10) value = value.slice(0, 10);
+                  handleInputChange("phone", value);
+                }}
+                maxLength={10}
+                placeholder="9800000000"
+                className="w-full pl-12 pr-4 py-3.5 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition-all text-gray-800 placeholder-gray-400"
+              />
             </div>
           </div>
-
-          {/* Address removed — only city is required now */}
 
           {/* City */}
           <div>
