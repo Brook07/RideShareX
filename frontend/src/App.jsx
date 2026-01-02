@@ -12,6 +12,9 @@ import BecomeHostPage from './pages/vehicles/BecomeHostPage';
 import ManageVehiclesPage from './pages/vehicles/ManageVehiclesPage';
 import MyBookingsPage from './pages/bookings/MyBookingsPage';
 import RentalRequestsPage from './pages/bookings/RentalRequestsPage';
+import PaymentPage from './pages/payment/PaymentPage';
+import PaymentSuccessPage from './pages/payment/PaymentSuccessPage';
+import PaymentFailurePage from './pages/payment/PaymentFailurePage';
 import './styles/animations.css';
 
 // Protected Route Component
@@ -116,6 +119,24 @@ function AppRoutes() {
       <Route path="/rental-requests" element={
         <ProtectedRoute>
           <RentalRequestsPage />
+        </ProtectedRoute>
+      } />
+
+      <Route path="/payment" element={
+        <ProtectedRoute>
+          <PaymentPage />
+        </ProtectedRoute>
+      } />
+
+      <Route path="/payment-success" element={
+        <ProtectedRoute>
+          <PaymentSuccessPage />
+        </ProtectedRoute>
+      } />
+
+      <Route path="/payment-failure" element={
+        <ProtectedRoute>
+          <PaymentFailurePage />
         </ProtectedRoute>
       } />
 

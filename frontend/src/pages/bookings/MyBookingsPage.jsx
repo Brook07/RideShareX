@@ -11,7 +11,8 @@ import {
   XCircle,
   AlertCircle,
   Loader,
-  RefreshCw
+  RefreshCw,
+  CreditCard
 } from "lucide-react";
 
 export default function MyBookingsPage() {
@@ -72,6 +73,12 @@ export default function MyBookingsPage() {
         text: "text-green-800",
         icon: CheckCircle,
         label: "Confirmed"
+      },
+      AWAITING_PAYMENT: {
+        bg: "bg-purple-100",
+        text: "text-purple-800",
+        icon: CreditCard,
+        label: "Awaiting Payment"
       },
       REJECTED: {
         bg: "bg-red-100",
@@ -248,15 +255,26 @@ export default function MyBookingsPage() {
                     )}
 
                     {/* Actions */}
-                    {['PENDING', 'CONFIRMED'].includes(booking.status) && (
-                      <button
-                        onClick={() => cancelBooking(booking._id)}
-                        disabled={cancelling === booking._id}
-                        className="px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition-colors text-sm font-medium disabled:opacity-50"
-                      >
-                        {cancelling === booking._id ? 'Cancelling...' : 'Cancel Booking'}
-                      </button>
-                    )}
+                    <div className="flex items-center gap-3">
+                      {booking.status === 'AWAITING_PAYMENT' && (
+                        <button
+                          onClick={() => navigate('/payment', { state: { booking } })}
+                          className="px-6 py-2 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 transition-all shadow-md hover:shadow-lg font-medium flex items-center gap-2"
+                        >
+                          <CreditCard className="w-4 h-4" />
+                          Pay Now
+                        </button>
+                      )}
+                      {['PENDING', 'CONFIRMED', 'AWAITING_PAYMENT'].includes(booking.status) && (
+                        <button
+                          onClick={() => cancelBooking(booking._id)}
+                          disabled={cancelling === booking._id}
+                          className="px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition-colors text-sm font-medium disabled:opacity-50"
+                        >
+                          {cancelling === booking._id ? 'Cancelling...' : 'Cancel Booking'}
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>

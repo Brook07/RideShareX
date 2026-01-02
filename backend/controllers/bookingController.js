@@ -177,8 +177,13 @@ exports.updateBookingStatus = async (req, res) => {
       return res.status(400).json({ message: "Booking has expired" });
     }
 
-    // Update status
-    booking.status = status;
+    // Update status - set to AWAITING_PAYMENT when confirmed
+    if (status === 'CONFIRMED') {
+      booking.status = 'AWAITING_PAYMENT';
+    } else {
+      booking.status = status;
+    }
+    
     if (status === 'REJECTED' && rejectionReason) {
       booking.rejectionReason = rejectionReason;
     }
@@ -192,7 +197,7 @@ exports.updateBookingStatus = async (req, res) => {
 
     res.json({
       success: true,
-      message: `Booking ${status.toLowerCase()} successfully`,
+      message: status === 'CONFIRMED' ? 'Booking confirmed. User can now proceed with payment.' : `Booking ${status.toLowerCase()} successfully`,
       booking: updatedBooking
     });
 
