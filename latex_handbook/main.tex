@@ -1,0 +1,291 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=0.8in]{geometry}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{tcolorbox}
+\usepackage{enumitem}
+
+\definecolor{codegray}{rgb}{0.95,0.95,0.95}
+\lstset{
+    backgroundcolor=\color{codegray},
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    frame=single,
+    numbers=none
+}
+
+\title{\textbf{RideShareX Full-Stack Handbook}\\[0.3cm]\large Quick Reference Guide}
+\author{Computer Science Learning Resource}
+\date{\today}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+%=====================================
+\section{System Design Overview}
+%=====================================
+
+\subsection{Frontend vs Backend}
+\begin{tcolorbox}[colback=blue!5]
+\textbf{Frontend:} Runs in browser. Shows UI, captures input, calls APIs.\\
+\textbf{Backend:} Runs on server. Stores data, enforces rules, handles security.
+\end{tcolorbox}
+
+\subsection{Client-Server Flow}
+\begin{verbatim}
+Browser (Client) --HTTP Request--> Backend Server --Query--> Database
+Browser          <--JSON Response-- Backend Server <--Data--- Database
+\end{verbatim}
+
+\subsection{What Happens on "Book Now" Click}
+\begin{enumerate}[noitemsep]
+    \item User fills form, clicks button
+    \item Frontend validates input
+    \item Frontend sends POST /api/bookings with JWT token
+    \item Backend verifies token, validates data
+    \item Backend saves booking to database
+    \item Backend returns JSON response
+    \item Frontend updates UI
+\end{enumerate}
+
+%=====================================
+\section{Frontend (React)}
+%=====================================
+
+\subsection{Core Concepts}
+\begin{itemize}[noitemsep]
+    \item \textbf{Component:} Reusable UI piece that returns JSX
+    \item \textbf{JSX:} HTML-like syntax in JavaScript
+    \item \textbf{Props:} Data passed from parent to child (read-only)
+    \item \textbf{State:} Data owned by component (can change)
+\end{itemize}
+
+\subsection{Key Hooks}
+\begin{lstlisting}[language=JavaScript]
+// useState - manage component state
+const [loading, setLoading] = useState(false);
+
+// useEffect - run side effects (API calls)
+useEffect(() => {
+  fetchVehicles();
+}, []); // [] = run once on mount
+\end{lstlisting}
+
+\subsection{API Call Pattern}
+\begin{lstlisting}[language=JavaScript]
+const response = await fetch('/api/bookings', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`
+  },
+  body: JSON.stringify({ vehicleId, pickupDate, dropDate })
+});
+const data = await response.json();
+\end{lstlisting}
+
+%=====================================
+\section{Backend (Node.js + Express)}
+%=====================================
+
+\subsection{Core Concepts}
+\begin{itemize}[noitemsep]
+    \item \textbf{Route:} Maps URL + HTTP method to handler
+    \item \textbf{Controller:} Handles request/response
+    \item \textbf{Middleware:} Runs before controller (auth, validation)
+    \item \textbf{Service:} Business logic layer
+\end{itemize}
+
+\subsection{Basic Express Setup}
+\begin{lstlisting}[language=JavaScript]
+const express = require('express');
+const app = express();
+app.use(express.json()); // parse JSON body
+
+app.get('/api/vehicles', (req, res) => {
+  res.json({ vehicles: [...] });
+});
+
+app.listen(5000);
+\end{lstlisting}
+
+\subsection{REST API Rules}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Method} & \textbf{Action} & \textbf{Example} \\
+\hline
+GET & Read & GET /api/vehicles \\
+POST & Create & POST /api/bookings \\
+PUT & Update & PUT /api/bookings/:id \\
+DELETE & Delete & DELETE /api/bookings/:id \\
+\hline
+\end{tabular}
+
+\vspace{0.3cm}
+\subsection{Status Codes}
+\begin{tabular}{|l|l|}
+\hline
+200 & OK (success) \\
+201 & Created (POST success) \\
+400 & Bad Request (invalid input) \\
+401 & Unauthorized (no/bad token) \\
+403 & Forbidden (no permission) \\
+404 & Not Found \\
+500 & Server Error \\
+\hline
+\end{tabular}
+
+%=====================================
+\section{Database (MongoDB)}
+%=====================================
+
+\subsection{SQL vs NoSQL}
+\begin{tabular}{|l|l|}
+\hline
+\textbf{SQL} & \textbf{NoSQL (MongoDB)} \\
+\hline
+Tables with rows & Collections with documents \\
+Fixed schema & Flexible schema \\
+Joins & References + populate \\
+\hline
+\end{tabular}
+
+\subsection{RideShareX Schemas (Summary)}
+\begin{lstlisting}[language=JavaScript]
+// User
+{ name, email, password, role: 'user'|'owner' }
+
+// Vehicle
+{ owner: ObjectId, title, dailyRate, images, location }
+
+// Booking
+{ vehicle: ObjectId, user: ObjectId, owner: ObjectId,
+  pickupDate, dropDate, totalPrice,
+  status: 'pending'|'approved'|'rejected', expiresAt }
+\end{lstlisting}
+
+\subsection{Common Operations}
+\begin{lstlisting}[language=JavaScript]
+// Create
+await Booking.create({ vehicle, user, ... });
+
+// Read
+await Vehicle.find({ dailyRate: { $lte: 100 } });
+await Booking.findById(id).populate('vehicle');
+
+// Update
+await Booking.findByIdAndUpdate(id, { status: 'approved' });
+
+// Delete
+await Vehicle.findByIdAndDelete(id);
+\end{lstlisting}
+
+%=====================================
+\section{Authentication (JWT)}
+%=====================================
+
+\subsection{Flow}
+\begin{enumerate}[noitemsep]
+    \item User sends email/password to POST /api/auth/login
+    \item Backend verifies, returns JWT token
+    \item Frontend stores token (localStorage)
+    \item Frontend sends token in every request header
+    \item Backend middleware verifies token, attaches user to req
+\end{enumerate}
+
+\subsection{JWT Structure}
+\begin{verbatim}
+header.payload.signature
+Payload: { id: "user123", role: "user", exp: timestamp }
+\end{verbatim}
+
+\subsection{Auth Middleware}
+\begin{lstlisting}[language=JavaScript]
+const protect = async (req, res, next) => {
+  const token = req.headers.authorization?.split(' ')[1];
+  if (!token) return res.status(401).json({ msg: 'No token' });
+  
+  const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  req.user = await User.findById(decoded.id);
+  next();
+};
+
+// Usage
+app.post('/api/bookings', protect, createBooking);
+\end{lstlisting}
+
+%=====================================
+\section{Payment Flow (eSewa)}
+%=====================================
+
+\begin{enumerate}[noitemsep]
+    \item Owner approves booking
+    \item User clicks "Pay Now"
+    \item Backend creates payment record, returns eSewa params
+    \item Frontend redirects to eSewa
+    \item User pays on eSewa
+    \item eSewa redirects back with success/failure
+    \item Backend verifies via webhook, updates payment status
+\end{enumerate}
+
+%=====================================
+\section{Time-Based Logic}
+%=====================================
+
+\subsection{Auto-Expire Bookings}
+\begin{lstlisting}[language=JavaScript]
+// When creating booking
+expiresAt: new Date(Date.now() + 5 * 60 * 60 * 1000) // 5 hours
+
+// Cron job (runs every 10 min)
+cron.schedule('*/10 * * * *', async () => {
+  await Booking.updateMany(
+    { status: 'pending', expiresAt: { $lt: new Date() } },
+    { status: 'expired' }
+  );
+});
+\end{lstlisting}
+
+%=====================================
+\section{Best Practices Checklist}
+%=====================================
+
+\begin{itemize}[noitemsep]
+    \item[$\square$] Validate on both frontend AND backend
+    \item[$\square$] Hash passwords (bcrypt)
+    \item[$\square$] Use HTTPS in production
+    \item[$\square$] Set JWT expiration
+    \item[$\square$] Handle errors with try/catch
+    \item[$\square$] Use environment variables for secrets
+    \item[$\square$] Separate concerns: routes $\rightarrow$ controllers $\rightarrow$ services
+    \item[$\square$] Use meaningful HTTP status codes
+    \item[$\square$] Sanitize user input
+    \item[$\square$] Log errors for debugging
+\end{itemize}
+
+%=====================================
+\section{Project Structure}
+%=====================================
+
+\begin{verbatim}
+frontend/
+  src/
+    components/   # Reusable UI
+    pages/        # Route pages
+    context/      # Auth context
+    services/     # API calls
+
+backend/
+  config/         # DB connection
+  controllers/    # Request handlers
+  middleware/     # Auth, validation
+  models/         # Mongoose schemas
+  routes/         # API routes
+  server.js       # Entry point
+\end{verbatim}
+
+\end{document}
