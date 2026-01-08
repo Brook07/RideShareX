@@ -10,7 +10,7 @@ module.exports = (req, res, next) => {
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    req.userId = decoded.userId; // 🔥 Save user ID so routes can use it
+    req.userId = decoded.userId; // Save user ID so routes can use it
 
     next();
   } catch (error) {

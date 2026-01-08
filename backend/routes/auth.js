@@ -29,7 +29,7 @@ router.post('/google-login', async (req, res) => {
     let user = await User.findOne({ googleId: googleId });
 
     if (user) {
-      console.log('✅ Existing user found:', user.email);
+      console.log('Existing user found:', user.email);
       
       // Existing user - update last login
       user.lastLogin = Date.now();
@@ -57,7 +57,7 @@ router.post('/google-login', async (req, res) => {
         }
       });
     } else {
-      console.log('🆕 Creating new user:', email);
+      console.log('Creating new user:', email);
       
       // New user - create account
       user = new User({
@@ -71,7 +71,7 @@ router.post('/google-login', async (req, res) => {
       });
 
       await user.save();
-      console.log('✅ New user created successfully');
+      console.log('New user created successfully');
 
       // Generate token
       const token = generateToken(user._id);
@@ -93,7 +93,7 @@ router.post('/google-login', async (req, res) => {
       });
     }
   } catch (error) {
-    console.error('❌ Google login error:', error);
+    console.error('Google login error:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
@@ -124,7 +124,7 @@ router.post('/complete-profile', authMiddleware, async (req, res) => {
 
     await user.save();
 
-    console.log('✅ Profile completed for user:', user.email);
+    console.log('Profile completed for user:', user.email);
 
     res.json({
       message: 'Profile completed successfully',
@@ -143,7 +143,7 @@ router.post('/complete-profile', authMiddleware, async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('❌ Complete profile error:', error);
+    console.error('Complete profile error:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
@@ -177,7 +177,7 @@ router.get('/me', authMiddleware, async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('❌ Get user error:', error);
+    console.error('Get user error:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
