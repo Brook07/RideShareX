@@ -38,9 +38,26 @@ exports.addVehicle = async (req, res) => {
 // ✅ Get ALL vehicles (public marketplace)
 exports.getAllVehicles = async (req, res) => {
   try {
-    const vehicles = await Vehicle.find().populate("owner", "name email");
+    const Booking = require("../models/Booking");
+    const currentDate = new Date();
+    
+    // Find all confirmed bookings that are currently active or in the future
+    const activeBookings = await Booking.find({
+      status: 'CONFIRMED',
+      dropoffDate: { $gte: currentDate } // Booking hasn't ended yet
+    }).select('vehicle');
+    
+    // Extract vehicle IDs that are currently booked
+    const bookedVehicleIds = activeBookings.map(booking => booking.vehicle.toString());
+    
+    // Get all vehicles except the ones that are currently booked
+    const vehicles = await Vehicle.find({
+      _id: { $nin: bookedVehicleIds }
+    }).populate("owner", "name email");
+    
     res.json({ vehicles });
   } catch (err) {
+    console.error("Get all vehicles error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
