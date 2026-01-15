@@ -6,6 +6,7 @@ const authRoutes = require('./routes/auth');
 const vehicleRoutes = require("./routes/vehicle");
 const bookingRoutes = require("./routes/booking");
 const recommendationRoutes = require("./routes/recommendation");
+const paymentRoutes = require("./routes/payment");
 
 
 dotenv.config();
@@ -30,6 +31,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/vehicles', vehicleRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/recommendations', recommendationRoutes);
+app.use('/api/payment', paymentRoutes);
 
 // Health check route
 app.get('/api/health', (req, res) => {

@@ -1,24 +1,31 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import Navbar from "../../components/common/Navbar";
 import {
   Calendar,
-  Clock,
   MapPin,
-  Car,
+  Clock,
+  CreditCard,
   CheckCircle,
   XCircle,
   AlertCircle,
   Loader,
-  RefreshCw
+  RefreshCw,
+  Car,
+  Phone,
+  Mail
 } from "lucide-react";
+import PaymentModal from "../../components/PaymentModal";
+import Navbar from "../../components/common/Navbar";
 
 export default function MyBookingsPage() {
   const navigate = useNavigate();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [cancelling, setCancelling] = useState(null);
+  const [selectedBooking, setSelectedBooking] = useState(null);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [recentPayment, setRecentPayment] = useState(null);
 
   useEffect(() => {
     fetchBookings();
@@ -30,12 +37,33 @@ export default function MyBookingsPage() {
   const fetchBookings = async () => {
     try {
       const token = localStorage.getItem("token");
+      
+      if (!token) {
+        console.error("No token found - user not logged in");
+        alert("Please login to view your bookings");
+        navigate("/login");
+        return;
+      }
+
+      console.log("Fetching bookings with token:", token.substring(0, 20) + "...");
+      
       const res = await axios.get("http://localhost:5000/api/bookings/user", {
         headers: { Authorization: `Bearer ${token}` }
       });
+      
+      console.log("Bookings response:", res.data);
       setBookings(res.data.bookings || []);
     } catch (err) {
       console.error("Fetch bookings error:", err);
+      console.error("Error response:", err.response?.data);
+      
+      if (err.response?.status === 401) {
+        alert("Session expired. Please login again.");
+        localStorage.removeItem("token");
+        navigate("/login");
+      } else {
+        alert("Failed to load bookings: " + (err.response?.data?.message || err.message));
+      }
     } finally {
       setLoading(false);
     }
@@ -57,6 +85,41 @@ export default function MyBookingsPage() {
     } finally {
       setCancelling(null);
     }
+  };
+
+  const handleProceedToPayment = (booking) => {
+    if (booking.paymentStatus === 'COMPLETED') {
+      alert('This booking has already been paid for.');
+      return;
+    }
+    setSelectedBooking(booking);
+    setIsPaymentModalOpen(true);
+  };
+
+  const handlePaymentSuccess = (paymentData) => {
+    setBookings((prev) => prev.map((booking) => {
+      if (booking._id === paymentData.bookingId) {
+        return {
+          ...booking,
+          paymentStatus: 'COMPLETED',
+          paymentMethod: paymentData.paymentMethod,
+          transactionId: paymentData.transactionId,
+          paidAt: paymentData.date || new Date().toISOString()
+        };
+      }
+      return booking;
+    }));
+    setRecentPayment({
+      bookingId: paymentData.bookingId,
+      transactionId: paymentData.transactionId,
+      amount: paymentData.amount
+    });
+    setIsPaymentModalOpen(false);
+    setSelectedBooking(null);
+
+    setTimeout(() => {
+      setRecentPayment(null);
+    }, 10000);
   };
 
   const getStatusBadge = (status) => {
@@ -105,11 +168,11 @@ export default function MyBookingsPage() {
   };
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      weekday: 'short',
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric', 
+      year: 'numeric' 
     });
   };
 
@@ -157,6 +220,39 @@ export default function MyBookingsPage() {
           </button>
         </div>
 
+        {/* Payment Success Banner */}
+        {recentPayment && (
+          <div className="bg-green-50 border-2 border-green-500 rounded-xl p-6 mb-6 shadow-lg animate-fade-in">
+            <div className="flex items-start gap-4">
+              <div className="p-3 bg-green-500 rounded-full">
+                <CheckCircle className="w-8 h-8 text-white" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-xl font-bold text-green-900 mb-1">🎉 Payment Successful!</h3>
+                <p className="text-green-800 text-sm mb-3">
+                  Your booking is now confirmed and ready. Check your email for pickup details.
+                </p>
+                <div className="flex flex-wrap gap-4 text-sm">
+                  <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg">
+                    <CreditCard className="w-4 h-4 text-green-600" />
+                    <span className="text-gray-700 font-mono">{recentPayment.transactionId}</span>
+                  </div>
+                  <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg">
+                    <span className="text-gray-600">Amount:</span>
+                    <span className="font-bold text-green-700">NPR {recentPayment.amount?.toLocaleString()}</span>
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={() => setRecentPayment(null)}
+                className="text-green-600 hover:text-green-800 font-bold text-xl"
+              >
+                ×
+              </button>
+            </div>
+          </div>
+        )}
+
         {bookings.length === 0 ? (
           <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
             <Car className="w-16 h-16 text-gray-300 mx-auto mb-4" />
@@ -199,7 +295,21 @@ export default function MyBookingsPage() {
                           {booking.vehicle?.make} {booking.vehicle?.model}
                         </p>
                       </div>
-                      {getStatusBadge(booking.status)}
+                      <div className="flex flex-col gap-2 items-end">
+                        {getStatusBadge(booking.status)}
+                        {booking.paymentStatus === 'COMPLETED' && (
+                          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-800 border border-green-300">
+                            <CheckCircle className="w-3 h-3" />
+                            PAID
+                          </span>
+                        )}
+                        {booking.paymentStatus === 'PENDING' && booking.status === 'CONFIRMED' && (
+                          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-yellow-100 text-yellow-800 border border-yellow-300">
+                            <AlertCircle className="w-3 h-3" />
+                            PAYMENT DUE
+                          </span>
+                        )}
+                      </div>
                     </div>
 
                     {/* Dates */}
@@ -226,7 +336,89 @@ export default function MyBookingsPage() {
                         <span className="text-sm text-gray-500">Total Price</span>
                         <p className="font-semibold text-blue-600">NPR {booking.totalPrice?.toLocaleString()}</p>
                       </div>
+                      {booking.paymentStatus && (
+                        <div>
+                          <span className="text-sm text-gray-500">Payment</span>
+                          <p className={`font-semibold ${
+                            booking.paymentStatus === 'COMPLETED' ? 'text-green-600' : 
+                            booking.paymentStatus === 'FAILED' ? 'text-red-600' : 'text-yellow-600'
+                          }`}>
+                            {booking.paymentStatus}
+                          </p>
+                        </div>
+                      )}
                     </div>
+
+                    {/* Payment Info - Show when payment completed */}
+                    {booking.paymentStatus === 'COMPLETED' && booking.transactionId && (
+                      <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-400 rounded-lg p-4 mb-4 shadow-sm">
+                        <div className="flex items-center gap-2 text-green-800 mb-3">
+                          <CheckCircle className="w-5 h-5" />
+                          <span className="text-sm font-bold">✅ Booking Confirmed - Payment Successful</span>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-green-700">
+                          <div className="bg-white rounded px-3 py-2">
+                            <p className="text-gray-500 mb-0.5">Transaction ID</p>
+                            <p className="font-mono font-semibold">{booking.transactionId}</p>
+                          </div>
+                          <div className="bg-white rounded px-3 py-2">
+                            <p className="text-gray-500 mb-0.5">Payment Method</p>
+                            <p className="font-semibold">{booking.paymentMethod || 'Demo Payment'}</p>
+                          </div>
+                          {booking.paidAt && (
+                            <div className="bg-white rounded px-3 py-2 sm:col-span-2">
+                              <p className="text-gray-500 mb-0.5">Payment Date</p>
+                              <p className="font-semibold">{new Date(booking.paidAt).toLocaleString()}</p>
+                            </div>
+                          )}
+                        </div>
+                        <p className="text-xs text-green-800 mt-3 font-medium">🚗 Your ride is ready! Contact the owner for pickup arrangements.</p>
+                      </div>
+                    )}
+
+                    {booking.paymentStatus === 'COMPLETED' && (
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                        <div className="flex items-center gap-2 text-blue-900 mb-3">
+                          <MapPin className="w-4 h-4" />
+                          <span className="text-sm font-semibold">Pickup & Owner Contact</span>
+                        </div>
+                        <div className="grid gap-4 sm:grid-cols-2 text-sm text-gray-700">
+                          <div className="flex items-start gap-2">
+                            <MapPin className="w-4 h-4 mt-0.5 text-blue-600" />
+                            <div>
+                              <p className="text-xs text-gray-500">Pickup Location</p>
+                              <p className="font-semibold text-gray-900">{booking.vehicle?.location || 'Owner will share exact spot'}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-start gap-2">
+                            <Phone className="w-4 h-4 mt-0.5 text-blue-600" />
+                            <div>
+                              <p className="text-xs text-gray-500">Owner Phone</p>
+                              <p className="font-semibold text-gray-900">{booking.owner?.phone || 'Not provided yet'}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-start gap-2">
+                            <Mail className="w-4 h-4 mt-0.5 text-blue-600" />
+                            <div>
+                              <p className="text-xs text-gray-500">Owner Email</p>
+                              <p className="font-semibold text-gray-900">{booking.owner?.email || 'Not provided'}</p>
+                            </div>
+                          </div>
+                          {(booking.owner?.address || booking.owner?.city) && (
+                            <div className="flex items-start gap-2">
+                              <MapPin className="w-4 h-4 mt-0.5 text-blue-600" />
+                              <div>
+                                <p className="text-xs text-gray-500">Pickup Address</p>
+                                <p className="font-semibold text-gray-900">
+                                  {booking.owner?.address || booking.owner?.city}
+                                </p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        <p className="text-xs text-blue-900 mt-3">Use these details to coordinate pickup time with the owner.</p>
+                      </div>
+                    )}
 
                     {/* Pending Status Timer */}
                     {booking.status === 'PENDING' && (
@@ -248,15 +440,38 @@ export default function MyBookingsPage() {
                     )}
 
                     {/* Actions */}
-                    {['PENDING', 'CONFIRMED'].includes(booking.status) && (
-                      <button
-                        onClick={() => cancelBooking(booking._id)}
-                        disabled={cancelling === booking._id}
-                        className="px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition-colors text-sm font-medium disabled:opacity-50"
-                      >
-                        {cancelling === booking._id ? 'Cancelling...' : 'Cancel Booking'}
-                      </button>
-                    )}
+                    <div className="flex flex-wrap gap-3">
+                      {/* Payment Button - Show only for confirmed bookings without payment */}
+                      {booking.status === 'CONFIRMED' && (!booking.paymentStatus || booking.paymentStatus === 'PENDING') && (
+                        <button
+                          onClick={() => handleProceedToPayment(booking)}
+                          disabled={booking.paymentStatus === 'COMPLETED'}
+                          className="flex items-center gap-2 px-5 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <CreditCard className="w-4 h-4" />
+                          Proceed to Payment
+                        </button>
+                      )}
+
+                      {/* Show Already Paid message */}
+                      {booking.status === 'CONFIRMED' && booking.paymentStatus === 'COMPLETED' && (
+                        <div className="flex items-center gap-2 px-5 py-2.5 bg-gray-100 text-gray-600 rounded-lg text-sm font-medium">
+                          <CheckCircle className="w-4 h-4 text-green-600" />
+                          Payment Completed - Ready to Ride
+                        </div>
+                      )}
+
+                      {/* Cancel Button */}
+                      {['PENDING', 'CONFIRMED'].includes(booking.status) && booking.paymentStatus !== 'COMPLETED' && (
+                        <button
+                          onClick={() => cancelBooking(booking._id)}
+                          disabled={cancelling === booking._id}
+                          className="px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition-colors text-sm font-medium disabled:opacity-50"
+                        >
+                          {cancelling === booking._id ? 'Cancelling...' : 'Cancel Booking'}
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -264,6 +479,17 @@ export default function MyBookingsPage() {
           </div>
         )}
       </div>
+
+      {/* Payment Modal */}
+      <PaymentModal 
+        booking={selectedBooking}
+        isOpen={isPaymentModalOpen}
+        onClose={() => {
+          setIsPaymentModalOpen(false);
+          setSelectedBooking(null);
+        }}
+        onPaymentSuccess={handlePaymentSuccess}
+      />
     </div>
   );
 }

@@ -67,7 +67,7 @@ export default function Navbar() {
             message: `Your booking for ${booking.vehicle?.name || 'vehicle'} has been approved`,
             time: new Date(booking.updatedAt),
             read: false,
-            link: '/bookings',
+            link: '/my-bookings',
             icon: 'check'
           });
         } else if (booking.status === 'REJECTED') {
@@ -78,7 +78,7 @@ export default function Navbar() {
             message: `Your booking for ${booking.vehicle?.name || 'vehicle'} was declined`,
             time: new Date(booking.updatedAt),
             read: false,
-            link: '/bookings',
+            link: '/my-bookings',
             icon: 'x'
           });
         }
@@ -153,7 +153,7 @@ export default function Navbar() {
   const navLinks = [
     { name: 'Home', path: '/home' },
     { name: 'Vehicles', path: '/vehicles' },
-    { name: 'My Bookings', path: '/bookings' },
+    { name: 'My Bookings', path: '/my-bookings' },
     { name: 'Become a Host', path: '/become-host'}
   ];
 
