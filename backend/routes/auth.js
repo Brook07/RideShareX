@@ -88,7 +88,8 @@ router.post('/google-login', async (req, res) => {
           picture: user.picture,
           isProfileComplete: false,
           role: 'user',
-          hasListedVehicles: false
+          hasListedVehicles: false,
+          walletBalance: 10000
         }
       });
     }
@@ -139,7 +140,8 @@ router.post('/complete-profile', authMiddleware, async (req, res) => {
         city: user.city,
         role: user.role,
         hasListedVehicles: user.hasListedVehicles,
-        isProfileComplete: user.isProfileComplete
+        isProfileComplete: user.isProfileComplete,
+        walletBalance: user.walletBalance || 10000
       }
     });
   } catch (error) {
@@ -172,12 +174,61 @@ router.get('/me', authMiddleware, async (req, res) => {
         role: user.role,
         hasListedVehicles: user.hasListedVehicles,
         isProfileComplete: user.isProfileComplete,
+        walletBalance: user.walletBalance || 10000,
         createdAt: user.createdAt,
         lastLogin: user.lastLogin
       }
     });
   } catch (error) {
     console.error('Get user error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// @route   PATCH /api/auth/profile
+// @desc    Update basic profile info
+// @access  Private
+router.patch('/profile', authMiddleware, async (req, res) => {
+  try {
+    const { name, phone, city } = req.body;
+
+    if (!name && !phone && !city) {
+      return res.status(400).json({ message: 'Provide at least one field to update' });
+    }
+
+    const user = await User.findById(req.userId);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (name) user.name = name;
+    if (phone !== undefined) user.phone = phone;
+    if (city !== undefined) user.city = city;
+
+    await user.save();
+
+    res.json({
+      message: 'Profile updated successfully',
+      user: {
+        id: user._id,
+        googleId: user.googleId,
+        email: user.email,
+        name: user.name,
+        picture: user.picture,
+        phone: user.phone,
+        address: user.address,
+        city: user.city,
+        role: user.role,
+        hasListedVehicles: user.hasListedVehicles,
+        isProfileComplete: user.isProfileComplete,
+        walletBalance: user.walletBalance || 10000,
+        createdAt: user.createdAt,
+        lastLogin: user.lastLogin
+      }
+    });
+  } catch (error) {
+    console.error('Update profile error:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });

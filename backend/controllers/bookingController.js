@@ -65,7 +65,7 @@ exports.createBooking = async (req, res) => {
     const populatedBooking = await Booking.findById(booking._id)
       .populate("vehicle", "name make model year image location")
       .populate("user", "name email picture")
-      .populate("owner", "name email");
+      .populate("owner", "name email picture phone address city");
 
     res.status(201).json({
       success: true,
@@ -99,7 +99,7 @@ exports.getUserBookings = async (req, res) => {
       status: { $ne: 'EXPIRED' }
     })
       .populate("vehicle", "name make model year image location fuelType seats")
-      .populate("owner", "name email picture")
+      .populate("owner", "name email picture phone address city")
       .sort({ createdAt: -1 });
 
     res.json({ success: true, bookings });
@@ -188,7 +188,7 @@ exports.updateBookingStatus = async (req, res) => {
     const updatedBooking = await Booking.findById(bookingId)
       .populate("vehicle", "name make model year image location")
       .populate("user", "name email picture")
-      .populate("owner", "name email");
+      .populate("owner", "name email picture phone address city");
 
     res.json({
       success: true,

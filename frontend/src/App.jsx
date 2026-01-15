@@ -12,6 +12,7 @@ import BecomeHostPage from './pages/vehicles/BecomeHostPage';
 import ManageVehiclesPage from './pages/vehicles/ManageVehiclesPage';
 import MyBookingsPage from './pages/bookings/MyBookingsPage';
 import RentalRequestsPage from './pages/bookings/RentalRequestsPage';
+import TransactionHistoryPage from './pages/TransactionHistoryPage';
 import './styles/animations.css';
 
 // Protected Route Component
@@ -20,6 +21,11 @@ function ProtectedRoute({ children }) {
   
   if (!user) {
     return <Navigate to="/" replace />;
+  }
+  
+  // Redirect to complete profile if not completed
+  if (!user.isProfileComplete && window.location.pathname !== '/register-details') {
+    return <Navigate to="/register-details" replace />;
   }
   
   return children;
@@ -37,6 +43,8 @@ function PublicRoute({ children }) {
 }
 
 function AppRoutes() {
+  const { user } = useAuth();
+  
   return (
     <Routes>
       {/* Public Routes */}
@@ -71,12 +79,6 @@ function AppRoutes() {
         </ProtectedRoute>
       } />
 
-<Route path="/AddVehicle" element={
-        <ProtectedRoute>
-          <AddVehiclePage />
-        </ProtectedRoute>
-      } />
-
       <Route path="/add-vehicle" element={
         <ProtectedRoute>
           <AddVehiclePage />
@@ -107,20 +109,20 @@ function AppRoutes() {
         </ProtectedRoute>
       } />
 
-      <Route path="/bookings" element={
-        <ProtectedRoute>
-          <MyBookingsPage />
-        </ProtectedRoute>
-      } />
-
       <Route path="/rental-requests" element={
         <ProtectedRoute>
           <RentalRequestsPage />
         </ProtectedRoute>
       } />
 
-      {/* Catch all - redirect to home */}
-      <Route path="*" element={<Navigate to="/home" replace />} />
+      <Route path="/transactions" element={
+        <ProtectedRoute>
+          <TransactionHistoryPage />
+        </ProtectedRoute>
+      } />
+
+      {/* Catch all - redirect based on auth status */}
+      <Route path="*" element={<Navigate to={user ? "/home" : "/"} replace />} />
     </Routes>
   );
 }

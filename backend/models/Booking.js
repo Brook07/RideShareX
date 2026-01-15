@@ -68,6 +68,28 @@ const bookingSchema = new mongoose.Schema({
   rejectionReason: {
     type: String,
     default: ""
+  },
+  // Payment status
+  paymentStatus: {
+    type: String,
+    enum: ['PENDING', 'COMPLETED', 'FAILED', 'REFUNDED'],
+    default: 'PENDING'
+  },
+  // Payment method (demo)
+  paymentMethod: {
+    type: String,
+    enum: ['ESEWA', 'KHALTI', 'CARD', 'CASH'],
+    default: null
+  },
+  // When payment was made
+  paidAt: {
+    type: Date,
+    default: null
+  },
+  // Payment transaction ID (demo)
+  transactionId: {
+    type: String,
+    default: null
   }
 }, {
   timestamps: true
