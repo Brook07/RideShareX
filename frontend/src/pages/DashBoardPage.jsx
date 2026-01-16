@@ -125,17 +125,7 @@ export default function DashboardPage() {
     });
   };
 
-  // Transaction functions
-  const getLocalTransactions = () => {
-    try {
-      const stored = JSON.parse(localStorage.getItem('demoTransactions')) || [];
-      return stored.filter(t => !user || !t.userId || t.userId === user._id);
-    } catch (err) {
-      console.error('Failed to parse local transactions', err);
-      return [];
-    }
-  };
-
+  // Transaction functions - fetches only from database
   const fetchTransactions = async () => {
     setTransactionsLoading(true);
     try {
@@ -144,13 +134,10 @@ export default function DashboardPage() {
         headers: { Authorization: `Bearer ${token}` }
       });
       const serverTransactions = res.data.payments || [];
-      const localTransactions = getLocalTransactions();
-      const merged = [...localTransactions, ...serverTransactions]
-        .sort((a, b) => new Date(b.date || b.completedAt || b.createdAt) - new Date(a.date || a.completedAt || a.createdAt));
-      setTransactions(merged);
+      setTransactions(serverTransactions);
     } catch (err) {
       console.error('Fetch transactions error:', err);
-      setTransactions(getLocalTransactions());
+      setTransactions([]);
     } finally {
       setTransactionsLoading(false);
     }

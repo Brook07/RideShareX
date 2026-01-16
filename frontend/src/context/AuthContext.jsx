@@ -15,21 +15,6 @@ export function AuthProvider({ children }) {
   const [token, setToken] = useState(localStorage.getItem('token'));
   const [loading, setLoading] = useState(true);
 
-  const getWalletOverrides = () => {
-    try {
-      return JSON.parse(localStorage.getItem('demoWalletOverrides')) || {};
-    } catch (err) {
-      console.error('Failed to parse demo wallet overrides', err);
-      return {};
-    }
-  };
-
-  const setWalletOverride = (userId, balance) => {
-    const overrides = getWalletOverrides();
-    overrides[userId] = balance;
-    localStorage.setItem('demoWalletOverrides', JSON.stringify(overrides));
-  };
-
   // Set axios authorization header
   useEffect(() => {
     if (token) {
@@ -44,23 +29,14 @@ export function AuthProvider({ children }) {
     const loadUser = async () => {
       const savedToken = localStorage.getItem('token');
       
-      console.log("🔍 Loading user, token exists:", !!savedToken);
-      
       if (savedToken) {
         try {
           axios.defaults.headers.common['Authorization'] = `Bearer ${savedToken}`;
-          console.log("📡 Calling /api/auth/me...");
           const response = await axios.get('/api/auth/me');
-          console.log("✅ User loaded successfully:", response.data.user);
-          const overrides = getWalletOverrides();
-          const overrideBalance = overrides[response.data.user._id];
-          const userData = overrideBalance !== undefined
-            ? { ...response.data.user, walletBalance: overrideBalance }
-            : response.data.user;
-          setUser(userData);
+          setUser(response.data.user);
           setToken(savedToken);
         } catch (error) {
-          console.error('❌ Failed to load user:', error.response?.status, error.response?.data);
+          console.error('Failed to load user:', error);
           localStorage.removeItem('token');
           setToken(null);
           setUser(null);
@@ -74,12 +50,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   const login = (userData, authToken) => {
-    const overrides = getWalletOverrides();
-    const overrideBalance = overrides[userData._id];
-    const finalUser = overrideBalance !== undefined
-      ? { ...userData, walletBalance: overrideBalance }
-      : userData;
-    setUser(finalUser);
+    setUser(userData);
     setToken(authToken);
     localStorage.setItem('token', authToken);
     axios.defaults.headers.common['Authorization'] = `Bearer ${authToken}`;
@@ -93,13 +64,18 @@ export function AuthProvider({ children }) {
   };
 
   const updateUser = (updatedData) => {
-    setUser(prev => {
-      const nextUser = { ...prev, ...updatedData };
-      if (updatedData.walletBalance !== undefined && nextUser?._id) {
-        setWalletOverride(nextUser._id, updatedData.walletBalance);
-      }
-      return nextUser;
-    });
+    setUser(prev => ({ ...prev, ...updatedData }));
+  };
+
+  const refreshUser = async () => {
+    try {
+      const response = await axios.get('/api/auth/me');
+      setUser(response.data.user);
+      return response.data.user;
+    } catch (error) {
+      console.error('Failed to refresh user:', error);
+      throw error;
+    }
   };
 
   const value = {
@@ -108,8 +84,7 @@ export function AuthProvider({ children }) {
     login,
     logout,
     updateUser,
-    setWalletOverride,
-    getWalletOverrides,
+    refreshUser,
     loading
   };
 

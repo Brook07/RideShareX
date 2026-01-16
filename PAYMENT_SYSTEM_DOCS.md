@@ -162,7 +162,7 @@ Response (200):
     "booking": {...},
     "user": {...},
     "vehicle": {...},
-    "amount": {
+    "amount": {![1768559079969](image/PAYMENT_SYSTEM_DOCS/1768559079969.png)
       "baseFare": 6299,
       "distanceFare": 1800,
       "serviceFee": 900,
