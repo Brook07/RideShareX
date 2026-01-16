@@ -23,4 +23,9 @@ router.get("/user/history", authMiddleware, paymentController.getUserPaymentHist
 // @access  Private
 router.post("/refund/:paymentId", authMiddleware, paymentController.refundPayment);
 
+// @route   DELETE /api/payment/user/clear-history
+// @desc    Clear all payment history for logged-in user
+// @access  Private
+router.delete("/user/clear-history", authMiddleware, paymentController.clearUserPaymentHistory);
+
 module.exports = router;

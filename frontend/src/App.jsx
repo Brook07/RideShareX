@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { cleanupLocalStorage, needsCleanup } from './utils/cleanupStorage';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterDetailsPage from './pages/auth/RegisterDetailsPage';
 import LandingPage from './pages/LandingPage';
@@ -14,6 +15,11 @@ import MyBookingsPage from './pages/bookings/MyBookingsPage';
 import RentalRequestsPage from './pages/bookings/RentalRequestsPage';
 import TransactionHistoryPage from './pages/TransactionHistoryPage';
 import './styles/animations.css';
+
+// Cleanup localStorage on app load
+if (needsCleanup()) {
+  cleanupLocalStorage();
+}
 
 // Protected Route Component
 function ProtectedRoute({ children }) {

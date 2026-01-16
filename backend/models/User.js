@@ -57,7 +57,7 @@ const userSchema = new mongoose.Schema({
   // Demo wallet balance (for demo payments)
   walletBalance: {
     type: Number,
-    default: 10000,
+    default: 100000,
     min: 0
   },
   

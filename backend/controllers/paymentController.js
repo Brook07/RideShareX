@@ -160,11 +160,20 @@ exports.processDemoPayment = async (req, res) => {
       console.log(`💰 Wallet transaction: User ${user.name} paid NPR ${totalPrice} to ${owner.name}`);
     }
 
+    // Create payment record with booking details snapshot
     const payment = new Payment({
       booking: bookingId,
       user: userId,
       owner: ownerId,
       vehicle: vehicleId,
+      bookingDetails: {
+        pickupDate: booking.pickupDate,
+        dropoffDate: booking.dropoffDate,
+        totalDays: booking.totalDays,
+        pickupLocation: booking.pickupLocation || 'N/A',
+        vehicleName: booking.vehicle?.name || 'Unknown Vehicle',
+        vehicleModel: booking.vehicle?.model || 'N/A'
+      },
       amount: {
         baseFare,
         distanceFare,
@@ -184,6 +193,12 @@ exports.processDemoPayment = async (req, res) => {
     });
 
     await payment.save();
+    
+    console.log("💾 Payment record created with booking snapshot:", {
+      transactionId,
+      amount: totalPrice,
+      bookingDetails: payment.bookingDetails
+    });
 
     // Update booking payment status
     booking.paymentStatus = "COMPLETED";
@@ -192,7 +207,12 @@ exports.processDemoPayment = async (req, res) => {
     booking.transactionId = transactionId;
     await booking.save();
 
+    // Mark vehicle as inactive since it's now booked and paid
+    const Vehicle = require("../models/Vehicle");
+    await Vehicle.findByIdAndUpdate(vehicleId, { status: 'inactive' });
+
     console.log("✅ Demo payment successful:", transactionId);
+    console.log("🚗 Vehicle marked as inactive:", vehicleId);
 
     // Get updated user balance
     const updatedUser = await User.findById(userId);
@@ -266,42 +286,75 @@ exports.getPaymentByBooking = async (req, res) => {
 };
 
 // @route   GET /api/payment/user/history
-// @desc    Get payment history for logged-in user
+// @desc    Get payment history for logged-in user (real transactions only)
 // @access  Private
 exports.getUserPaymentHistory = async (req, res) => {
   try {
     const userId = req.userId;
 
-    // Get payments where user is either payer or receiver
+    // Get payments where user is either payer or receiver - COMPLETED transactions only
     const payments = await Payment.find({
       $or: [
         { user: userId },
         { owner: userId }
-      ]
+      ],
+      status: 'COMPLETED' // Only show completed real transactions
     })
-      .populate("booking", "pickupDate dropoffDate totalDays")
+      .populate("booking", "pickupDate dropoffDate totalDays pickupLocation")
       .populate("vehicle", "name model image")
-      .populate("user", "name picture")
-      .populate("owner", "name picture")
-      .sort({ createdAt: -1 })
+      .populate("user", "name picture email phone")
+      .populate("owner", "name picture email phone")
+      .sort({ completedAt: -1, createdAt: -1 })
       .limit(100);
 
-    // Transform data to show whether it's debit or credit
-    const transactions = payments.map(payment => ({
-      _id: payment._id,
-      transactionId: payment.transactionId,
-      amount: payment.amount.totalAmount,
-      type: payment.user._id.toString() === userId ? 'DEBIT' : 'CREDIT',
-      status: payment.status,
-      paymentMethod: payment.paymentMethod,
-      date: payment.completedAt || payment.createdAt,
-      booking: payment.booking,
-      vehicle: payment.vehicle,
-      otherParty: payment.user._id.toString() === userId ? payment.owner : payment.user,
-      description: payment.user._id.toString() === userId 
-        ? `Payment to ${payment.owner.name} for ${payment.vehicle.name}`
-        : `Payment from ${payment.user.name} for ${payment.vehicle.name}`
-    }));
+    // Transform data to show whether it's debit or credit with complete information
+    const transactions = payments.map(payment => {
+      const isDebit = payment.user._id.toString() === userId;
+      const otherParty = isDebit ? payment.owner : payment.user;
+      const vehicleName = payment.vehicle?.name || payment.bookingDetails?.vehicleName || 'Unknown Vehicle';
+      const vehicleModel = payment.vehicle?.model || payment.bookingDetails?.vehicleModel || '';
+      
+      return {
+        _id: payment._id,
+        transactionId: payment.transactionId,
+        amount: payment.amount.totalAmount,
+        type: isDebit ? 'DEBIT' : 'CREDIT',
+        status: payment.status,
+        paymentMethod: payment.paymentMethod,
+        date: payment.completedAt || payment.createdAt,
+        // Use booking details snapshot if booking was deleted
+        booking: payment.booking || {
+          pickupDate: payment.bookingDetails?.pickupDate,
+          dropoffDate: payment.bookingDetails?.dropoffDate,
+          totalDays: payment.bookingDetails?.totalDays,
+          pickupLocation: payment.bookingDetails?.pickupLocation
+        },
+        vehicle: payment.vehicle || {
+          name: payment.bookingDetails?.vehicleName,
+          model: payment.bookingDetails?.vehicleModel,
+          image: null
+        },
+        otherParty: {
+          _id: otherParty._id,
+          name: otherParty.name,
+          picture: otherParty.picture,
+          email: otherParty.email,
+          phone: otherParty.phone
+        },
+        description: isDebit 
+          ? `Payment to ${otherParty.name} for ${vehicleName} ${vehicleModel}`.trim()
+          : `Payment from ${otherParty.name} for ${vehicleName} ${vehicleModel}`.trim(),
+        // Additional details for transparency
+        amountBreakdown: {
+          baseFare: payment.amount.baseFare,
+          distanceFare: payment.amount.distanceFare,
+          serviceFee: payment.amount.serviceFee,
+          total: payment.amount.totalAmount
+        }
+      };
+    });
+
+    console.log(`📜 Retrieved ${transactions.length} real transactions for user ${userId}`);
 
     res.json({ 
       payments: transactions,
@@ -376,6 +429,38 @@ exports.refundPayment = async (req, res) => {
     console.error("Refund payment error:", error);
     res.status(500).json({ 
       message: "Refund processing failed", 
+      error: error.message 
+    });
+  }
+};
+
+// @route   DELETE /api/payment/user/clear-history
+// @desc    Clear payment history visible to logged-in user (deletes where user is payer OR receiver)
+// @access  Private
+exports.clearUserPaymentHistory = async (req, res) => {
+  try {
+    const userId = req.userId;
+
+    // Delete all payments where the user is either the payer OR the receiver
+    const result = await Payment.deleteMany({
+      $or: [
+        { user: userId },
+        { owner: userId }
+      ]
+    });
+
+    console.log(`🗑️ Cleared ${result.deletedCount} transactions for user ${userId}`);
+
+    res.json({
+      success: true,
+      message: "Transaction history cleared successfully",
+      deletedCount: result.deletedCount
+    });
+
+  } catch (error) {
+    console.error("Clear history error:", error);
+    res.status(500).json({ 
+      message: "Failed to clear transaction history", 
       error: error.message 
     });
   }

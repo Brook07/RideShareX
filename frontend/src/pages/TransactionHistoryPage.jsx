@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Navbar from '../components/common/Navbar';
-import { Wallet, ArrowUpRight, ArrowDownLeft, Calendar, CreditCard, CheckCircle, XCircle, Loader, RefreshCw, Download } from 'lucide-react';
+import { Wallet, ArrowUpRight, ArrowDownLeft, Calendar, CreditCard, CheckCircle, XCircle, Loader, RefreshCw, Download, Trash2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export default function TransactionHistoryPage() {
@@ -11,6 +11,8 @@ export default function TransactionHistoryPage() {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('ALL'); // ALL, DEBIT, CREDIT
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [clearing, setClearing] = useState(false);
 
   useEffect(() => {
     fetchTransactions();
@@ -27,6 +29,24 @@ export default function TransactionHistoryPage() {
       console.error('Fetch transactions error:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const clearHistory = async () => {
+    try {
+      setClearing(true);
+      const token = localStorage.getItem('token');
+      await axios.delete('http://localhost:5000/api/payment/user/clear-history', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setTransactions([]);
+      setShowClearConfirm(false);
+      alert('Transaction history cleared successfully!');
+    } catch (err) {
+      console.error('Clear history error:', err);
+      alert('Failed to clear transaction history');
+    } finally {
+      setClearing(false);
     }
   };
 
@@ -165,13 +185,25 @@ export default function TransactionHistoryPage() {
             </button>
           </div>
 
-          <button
-            onClick={fetchTransactions}
-            className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            <RefreshCw className="w-4 h-4" />
-            Refresh
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={fetchTransactions}
+              className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Refresh
+            </button>
+            
+            {transactions.length > 0 && (
+              <button
+                onClick={() => setShowClearConfirm(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              >
+                <Trash2 className="w-4 h-4" />
+                Clear History
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Transactions List */}
@@ -265,6 +297,51 @@ export default function TransactionHistoryPage() {
           </div>
         )}
       </div>
+
+      {/* Clear History Confirmation Modal */}
+      {showClearConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-3 bg-red-100 rounded-full">
+                <Trash2 className="w-6 h-6 text-red-600" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900">Clear Transaction History?</h3>
+            </div>
+            
+            <p className="text-gray-600 mb-6">
+              This will permanently delete all your transaction records. This action cannot be undone.
+            </p>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowClearConfirm(false)}
+                disabled={clearing}
+                className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={clearHistory}
+                disabled={clearing}
+                className="flex-1 px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {clearing ? (
+                  <>
+                    <Loader className="w-4 h-4 animate-spin" />
+                    Clearing...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-4 h-4" />
+                    Clear History
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

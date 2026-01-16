@@ -122,7 +122,23 @@ export default function MyBookingsPage() {
     }, 10000);
   };
 
-  const getStatusBadge = (status) => {
+  const getStatusBadge = (status, paymentStatus) => {
+    // Special case: Confirmed but awaiting payment
+    if (status === 'CONFIRMED' && paymentStatus !== 'COMPLETED') {
+      return (
+        <div className="flex flex-col gap-1">
+          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+            <CheckCircle className="w-4 h-4" />
+            Booking Confirmed
+          </span>
+          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-800 border border-orange-300">
+            <AlertCircle className="w-3 h-3" />
+            Awaiting Payment
+          </span>
+        </div>
+      );
+    }
+
     const statusConfig = {
       PENDING: {
         bg: "bg-yellow-100",
@@ -296,17 +312,11 @@ export default function MyBookingsPage() {
                         </p>
                       </div>
                       <div className="flex flex-col gap-2 items-end">
-                        {getStatusBadge(booking.status)}
+                        {getStatusBadge(booking.status, booking.paymentStatus)}
                         {booking.paymentStatus === 'COMPLETED' && (
                           <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-800 border border-green-300">
                             <CheckCircle className="w-3 h-3" />
                             PAID
-                          </span>
-                        )}
-                        {booking.paymentStatus === 'PENDING' && booking.status === 'CONFIRMED' && (
-                          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-yellow-100 text-yellow-800 border border-yellow-300">
-                            <AlertCircle className="w-3 h-3" />
-                            PAYMENT DUE
                           </span>
                         )}
                       </div>
@@ -442,26 +452,25 @@ export default function MyBookingsPage() {
                     {/* Actions */}
                     <div className="flex flex-wrap gap-3">
                       {/* Payment Button - Show only for confirmed bookings without payment */}
-                      {booking.status === 'CONFIRMED' && (!booking.paymentStatus || booking.paymentStatus === 'PENDING') && (
+                      {booking.status === 'CONFIRMED' && booking.paymentStatus !== 'COMPLETED' && (
                         <button
                           onClick={() => handleProceedToPayment(booking)}
-                          disabled={booking.paymentStatus === 'COMPLETED'}
-                          className="flex items-center gap-2 px-5 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="flex items-center gap-2 px-5 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium shadow-md hover:shadow-lg"
                         >
                           <CreditCard className="w-4 h-4" />
                           Proceed to Payment
                         </button>
                       )}
 
-                      {/* Show Already Paid message */}
+                      {/* Show Already Paid message - No payment button when completed */}
                       {booking.status === 'CONFIRMED' && booking.paymentStatus === 'COMPLETED' && (
-                        <div className="flex items-center gap-2 px-5 py-2.5 bg-gray-100 text-gray-600 rounded-lg text-sm font-medium">
-                          <CheckCircle className="w-4 h-4 text-green-600" />
+                        <div className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-green-50 to-emerald-50 text-green-700 rounded-lg text-sm font-medium border-2 border-green-300">
+                          <CheckCircle className="w-5 h-5 text-green-600" />
                           Payment Completed - Ready to Ride
                         </div>
                       )}
 
-                      {/* Cancel Button */}
+                      {/* Cancel Button - Only show if payment is not completed */}
                       {['PENDING', 'CONFIRMED'].includes(booking.status) && booking.paymentStatus !== 'COMPLETED' && (
                         <button
                           onClick={() => cancelBooking(booking._id)}

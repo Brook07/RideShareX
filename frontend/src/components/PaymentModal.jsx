@@ -1,49 +1,24 @@
+// frontend/src/components/PaymentModal.jsx - CLEANED VERSION
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, CreditCard, Banknote, CheckCircle, XCircle, Loader, Phone, MapPin, Mail } from 'lucide-react';
+import { X, CreditCard, Banknote, CheckCircle, XCircle, Loader, Phone, MapPin, Mail, Calendar } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const PaymentModal = ({ booking, isOpen, onClose, onPaymentSuccess }) => {
   const navigate = useNavigate();
-  const { user, updateUser, setWalletOverride, getWalletOverrides } = useAuth();
+  const { user, updateUser } = useAuth();
   const [selectedMethod, setSelectedMethod] = useState('demo-wallet');
   const [isProcessing, setIsProcessing] = useState(false);
-  const [paymentStatus, setPaymentStatus] = useState(null); // 'success' | 'failed' | null
+  const [paymentStatus, setPaymentStatus] = useState(null);
   const [errorMessage, setErrorMessage] = useState('');
 
   if (!isOpen) return null;
 
-  const generateTransactionId = () => {
-    const prefix = 'DEMO';
-    const timestamp = Date.now().toString(36).toUpperCase();
-    const random = Math.floor(Math.random() * 9000 + 1000);
-    return `${prefix}-${timestamp}-${random}`;
-  };
-
-  const getOverrideBalance = (userId, fallback = 10000) => {
-    if (!userId || typeof getWalletOverrides !== 'function') return fallback;
-    const overrides = getWalletOverrides() || {};
-    if (overrides[userId] !== undefined) return overrides[userId];
-    return fallback;
-  };
-
-  const saveLocalTransactions = (entries) => {
-    if (!entries?.length) return;
-    let existing = [];
-    try {
-      existing = JSON.parse(localStorage.getItem('demoTransactions')) || [];
-    } catch (err) {
-      existing = [];
-    }
-    const updated = [...existing, ...entries];
-    localStorage.setItem('demoTransactions', JSON.stringify(updated));
-  };
-
   const calculateFareBreakdown = () => {
     const totalPrice = booking.totalPrice || 0;
-    const baseFare = Math.floor(totalPrice * 0.7); // 70% base fare
-    const distanceFare = Math.floor(totalPrice * 0.2); // 20% distance
-    const serviceFee = totalPrice - baseFare - distanceFare; // Remaining as service fee
+    const baseFare = Math.floor(totalPrice * 0.7);
+    const distanceFare = Math.floor(totalPrice * 0.2);
+    const serviceFee = totalPrice - baseFare - distanceFare;
 
     return {
       baseFare: baseFare.toFixed(2),
@@ -59,108 +34,59 @@ const PaymentModal = ({ booking, isOpen, onClose, onPaymentSuccess }) => {
     setIsProcessing(true);
     setErrorMessage('');
 
-    // Simulate processing delay
-    await new Promise(resolve => setTimeout(resolve, 2000));
-
     const totalAmount = booking.totalPrice || Number(fareBreakdown.total) || 0;
     const paymentMethodLabel = selectedMethod === 'demo-wallet' ? 'Demo Wallet' : 'Cash';
 
     try {
-      if (selectedMethod === 'demo-wallet') {
-        const currentBalance = user?.walletBalance ?? getOverrideBalance(user?._id, 10000);
-        if (currentBalance < totalAmount) {
-          setErrorMessage('Insufficient wallet balance for this payment.');
-          setPaymentStatus('failed');
-          setIsProcessing(false);
-          return;
+      // Call backend API to process payment
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:5000/api/payment/demo', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          bookingId: booking._id,
+          paymentMethod: paymentMethodLabel,
+          amount: totalAmount
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        if (data.currentBalance !== undefined && data.required !== undefined) {
+          throw new Error(`Insufficient balance. You have NPR ${data.currentBalance.toLocaleString()} but need NPR ${data.required.toLocaleString()}`);
         }
-        const newBalance = currentBalance - totalAmount;
-        updateUser({ walletBalance: newBalance });
+        throw new Error(data.message || 'Payment failed');
       }
 
-      const ownerId = booking.owner?._id;
-      if (ownerId && typeof setWalletOverride === 'function') {
-        const currentOwnerBalance = getOverrideBalance(ownerId, booking.owner?.walletBalance ?? 10000);
-        const updatedOwnerBalance = currentOwnerBalance + totalAmount;
-        setWalletOverride(ownerId, updatedOwnerBalance);
+      // Update local wallet balance from backend response
+      if (selectedMethod === 'demo-wallet' && data.newBalance !== undefined) {
+        updateUser({ walletBalance: data.newBalance });
       }
 
-      const transactionId = generateTransactionId();
-      window.lastTransactionId = transactionId;
       setPaymentStatus('success');
-
-      const timestamp = new Date().toISOString();
-      const paymentSummary = {
-        transactionId,
-        amount: totalAmount,
-        method: paymentMethodLabel,
-        ownerName: booking.owner?.name || 'Vehicle Owner',
-        vehicleName: booking.vehicle?.name || booking.vehicle?.model || 'Vehicle',
-        date: timestamp
-      };
-
-      const debitEntry = {
-        _id: `local-${transactionId}-debit`,
-        transactionId,
-        type: 'DEBIT',
-        amount: totalAmount,
-        status: 'COMPLETED',
-        paymentMethod: paymentMethodLabel,
-        date: timestamp,
-        userId: user?._id,
-        bookingId: booking._id,
-        description: `Payment to ${booking.owner?.name || 'vehicle owner'} for ${booking.vehicle?.name || booking.vehicle?.model || 'vehicle'}`,
-        otherParty: {
-          name: booking.owner?.name || 'Vehicle Owner',
-          picture: booking.owner?.picture || booking.vehicle?.image,
-          phone: booking.owner?.phone,
-          email: booking.owner?.email
-        }
-      };
-
-      const creditEntry = ownerId ? {
-        _id: `local-${transactionId}-credit`,
-        transactionId,
-        type: 'CREDIT',
-        amount: totalAmount,
-        status: 'COMPLETED',
-        paymentMethod: paymentMethodLabel,
-        date: timestamp,
-        userId: ownerId,
-        bookingId: booking._id,
-        description: `Payment received from ${user?.name || 'Renter'} for ${booking.vehicle?.name || booking.vehicle?.model || 'vehicle'}`,
-        otherParty: {
-          name: user?.name || 'Renter',
-          picture: user?.picture,
-          phone: null,
-          email: user?.email
-        }
-      } : null;
-
-      saveLocalTransactions(creditEntry ? [debitEntry, creditEntry] : [debitEntry]);
 
       // Auto-redirect after 1.5 seconds
       setTimeout(() => {
         const payload = {
           bookingId: booking._id,
-          transactionId,
+          transactionId: data.transactionId,
           amount: totalAmount,
           paymentMethod: paymentMethodLabel,
-          date: timestamp
+          date: data.completedAt
         };
         onPaymentSuccess(payload);
         onClose();
         setPaymentStatus(null);
-        window.lastTransactionId = null;
-        navigate('/dashboard?tab=transactions', {
-          state: { paymentSummary }
-        });
+        navigate('/transactions');
       }, 1500);
     } catch (error) {
       console.error('Payment error:', error);
-      setErrorMessage('Something went wrong while simulating the payment.');
+      setErrorMessage(error.message || 'Something went wrong while processing the payment.');
       setPaymentStatus('failed');
-    } finally {
       setIsProcessing(false);
     }
   };
@@ -177,261 +103,201 @@ const PaymentModal = ({ booking, isOpen, onClose, onPaymentSuccess }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-        {/* Processing Overlay */}
-        {isProcessing && !paymentStatus && (
-          <div className="absolute inset-0 bg-white bg-opacity-95 flex flex-col items-center justify-center z-10 rounded-2xl">
-            <Loader className="w-16 h-16 text-blue-600 animate-spin" />
-            <p className="mt-4 text-lg font-semibold text-gray-800">Processing Payment...</p>
-            <p className="text-sm text-gray-600 mt-2">Please wait</p>
-          </div>
-        )}
-
+      <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         {/* Success State */}
         {paymentStatus === 'success' && (
-          <div className="absolute inset-0 bg-white bg-opacity-98 flex flex-col items-center justify-center z-10 rounded-2xl px-6 text-center">
-            <div className="success-animation">
-              <CheckCircle className="w-20 h-20 text-green-500" strokeWidth={2} />
+          <div className="p-8 text-center">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-4">
+              <CheckCircle className="w-12 h-12 text-green-600" />
             </div>
-            <p className="mt-6 text-2xl font-bold text-gray-800">Payment Successful!</p>
-            <div className="mt-6 w-full space-y-4">
-              <div className="bg-gray-50 rounded-lg p-4">
-                <div className="text-sm text-gray-600 mb-1">Transaction ID</div>
-                <div className="font-mono text-gray-800 font-semibold text-sm break-all">
-                  {paymentStatus === 'success' && window.lastTransactionId ? window.lastTransactionId : `TXN-${Date.now().toString(36).toUpperCase()}`}
-                </div>
-                <div className="text-sm text-gray-600 mt-3 mb-1">Amount Paid</div>
-                <div className="text-2xl font-bold text-green-600">NPR {booking.totalPrice?.toLocaleString() || 0}</div>
-              </div>
-
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-left">
-                <h4 className="text-lg font-bold text-blue-900 mb-3">Pickup & Contact Details</h4>
-                <div className="space-y-3 text-sm text-blue-900">
-                  <div className="flex items-start gap-2">
-                    <MapPin className="w-4 h-4 mt-0.5" />
-                    <div>
-                      <p className="font-semibold text-gray-900">Pickup Location</p>
-                      <p>{booking.vehicle?.location || 'Owner will share soon'}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <Phone className="w-4 h-4 mt-0.5" />
-                    <div>
-                      <p className="font-semibold text-gray-900">Owner Contact</p>
-                      <p>{booking.owner?.phone || 'Phone not provided yet'}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <Mail className="w-4 h-4 mt-0.5" />
-                    <div>
-                      <p className="font-semibold text-gray-900">Owner Email</p>
-                      <p>{booking.owner?.email || 'Email not provided'}</p>
-                    </div>
-                  </div>
-                  {booking.owner?.address && (
-                    <div className="flex items-start gap-2">
-                      <MapPin className="w-4 h-4 mt-0.5" />
-                      <div>
-                        <p className="font-semibold text-gray-900">Pickup Address</p>
-                        <p>{booking.owner.address}</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Payment Successful!</h2>
+            <p className="text-gray-600 mb-4">
+              Your payment of NPR {fareBreakdown.total} has been processed successfully
+            </p>
+            <div className="inline-flex items-center gap-2 text-sm text-gray-500">
+              <Loader className="w-4 h-4 animate-spin" />
+              Redirecting to transactions...
             </div>
-            <p className="text-sm text-gray-500 mt-4">We also shared these details inside your booking card.</p>
           </div>
         )}
 
         {/* Failed State */}
         {paymentStatus === 'failed' && (
-          <div className="absolute inset-0 bg-white bg-opacity-98 flex flex-col items-center justify-center z-10 rounded-2xl p-6">
-            <XCircle className="w-20 h-20 text-red-500" strokeWidth={2} />
-            <p className="mt-6 text-2xl font-bold text-gray-800">Payment Failed</p>
-            <p className="text-gray-600 mt-2 text-center">
-              {errorMessage || 'Unable to process payment. Please try again.'}
-            </p>
-            <div className="mt-6 flex gap-3">
-              <button
-                onClick={handleRetry}
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-              >
-                Retry Payment
-              </button>
+          <div className="p-8 text-center">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-red-100 rounded-full mb-4">
+              <XCircle className="w-12 h-12 text-red-600" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Payment Failed</h2>
+            <p className="text-red-600 mb-6">{errorMessage}</p>
+            <div className="flex gap-3 justify-center">
               <button
                 onClick={onClose}
-                className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
+                className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
               >
                 Cancel
+              </button>
+              <button
+                onClick={handleRetry}
+                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Try Again
               </button>
             </div>
           </div>
         )}
 
-        {/* Header */}
-        <div className="sticky top-0 bg-white border-b border-gray-200 p-6 flex items-center justify-between rounded-t-2xl">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-800">Confirm Payment</h2>
-            <p className="text-sm text-gray-600 mt-1">Complete payment to start your ride</p>
-          </div>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition"
-            disabled={isProcessing}
-          >
-            <X className="w-6 h-6" />
-          </button>
-        </div>
-
-        {/* Content */}
-        <div className="p-6 space-y-6">
-          {/* DEMO Badge */}
-          <div className="bg-yellow-50 border-2 border-yellow-300 rounded-lg p-3 flex items-center gap-2">
-            <span className="text-yellow-700 font-semibold text-sm">⚠️ DEMO MODE</span>
-            <span className="text-yellow-600 text-xs">No real money will be charged</span>
-          </div>
-
-          {/* Booking Summary */}
-          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-5 border border-blue-200">
-            <h3 className="font-semibold text-gray-800 mb-4 text-lg">Booking Summary</h3>
-            
-            <div className="space-y-3">
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Booking ID</span>
-                <span className="font-mono font-semibold text-gray-800">
-                  {booking._id?.slice(-8).toUpperCase()}
-                </span>
-              </div>
-
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Vehicle</span>
-                <span className="font-semibold text-gray-800 text-right">
-                  {booking.vehicle?.name || booking.vehicle?.model || 'Vehicle'}
-                </span>
-              </div>
-
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Owner</span>
-                <span className="font-semibold text-gray-800 text-right">
-                  {booking.owner?.name || 'Vehicle Owner'}
-                </span>
-              </div>
-
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Rental Period</span>
-                <span className="font-semibold text-gray-800">{booking.totalDays} day{booking.totalDays > 1 ? 's' : ''}</span>
-              </div>
-
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Price per Day</span>
-                <span className="font-semibold text-gray-800">NPR {booking.pricePerDay?.toLocaleString() || 0}</span>
-              </div>
-
-              <div className="border-t-2 border-blue-300 my-3"></div>
-
-              <div className="flex justify-between items-center">
-                <span className="text-gray-800 font-bold text-lg">Total Amount</span>
-                <span className="text-blue-600 font-bold text-2xl">NPR {booking.totalPrice?.toLocaleString() || 0}</span>
-              </div>
+        {/* Payment Form */}
+        {!paymentStatus && (
+          <>
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h2 className="text-2xl font-bold text-gray-900">Complete Payment</h2>
+              <button
+                onClick={onClose}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <X className="w-6 h-6 text-gray-500" />
+              </button>
             </div>
-          </div>
 
-          {/* Owner Contact Info */}
-          <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-            <h3 className="font-semibold text-gray-800 mb-4 text-lg">Payment Recipient</h3>
-            <div className="space-y-3 text-sm text-gray-700">
-              <div className="flex items-center justify-between">
-                <span className="text-gray-600">Name</span>
-                <span className="font-semibold text-gray-900">{booking.owner?.name || 'Vehicle Owner'}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-gray-600">Phone</span>
-                <span className="font-semibold text-gray-900">{booking.owner?.phone || 'Not provided yet'}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-gray-600">Email</span>
-                <span className="font-semibold text-gray-900">{booking.owner?.email || 'Not provided'}</span>
-              </div>
-              {(booking.owner?.address || booking.vehicle?.location) && (
-                <div className="flex items-start justify-between gap-4">
-                  <span className="text-gray-600">Pickup Spot</span>
-                  <span className="font-semibold text-gray-900 text-right">
-                    {booking.owner?.address || booking.vehicle?.location}
-                  </span>
+            <div className="p-6 space-y-6">
+              {/* Booking Summary */}
+              <div className="bg-gray-50 rounded-xl p-4 space-y-3">
+                <h3 className="font-semibold text-gray-900 mb-3">Booking Details</h3>
+                
+                <div className="flex items-start gap-4">
+                  <img
+                    src={booking.vehicle?.image || '/placeholder-car.jpg'}
+                    alt={booking.vehicle?.name}
+                    className="w-20 h-20 rounded-lg object-cover"
+                  />
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-gray-900">{booking.vehicle?.name}</h4>
+                    <p className="text-sm text-gray-600">{booking.vehicle?.model}</p>
+                  </div>
                 </div>
-              )}
-            </div>
-            <p className="text-xs text-gray-500 mt-3">This is who receives the payment and meets you at pickup.</p>
-          </div>
 
-          {/* Payment Methods */}
-          <div>
-            <h3 className="font-semibold text-gray-800 mb-4 text-lg">Select Payment Method</h3>
-            <div className="space-y-3">
-              {paymentMethods.map((method) => (
-                <div
-                  key={method.id}
-                  onClick={() => setSelectedMethod(method.id)}
-                  className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
-                    selectedMethod === method.id
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                >
+                <div className="grid grid-cols-2 gap-3 pt-3 border-t border-gray-200">
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <Calendar className="w-4 h-4" />
+                    <span>{booking.totalDays} days</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <MapPin className="w-4 h-4" />
+                    <span>{booking.pickupLocation}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Fare Breakdown */}
+              <div className="space-y-3">
+                <h3 className="font-semibold text-gray-900">Fare Breakdown</h3>
+                <div className="bg-gray-50 rounded-xl p-4 space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Base Fare</span>
+                    <span className="font-medium">NPR {fareBreakdown.baseFare}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Distance Fare</span>
+                    <span className="font-medium">NPR {fareBreakdown.distanceFare}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Service Fee</span>
+                    <span className="font-medium">NPR {fareBreakdown.serviceFee}</span>
+                  </div>
+                  <div className="flex justify-between pt-2 border-t border-gray-200">
+                    <span className="font-semibold text-gray-900">Total Amount</span>
+                    <span className="text-xl font-bold text-blue-600">NPR {fareBreakdown.total}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Payment Methods */}
+              <div className="space-y-3">
+                <h3 className="font-semibold text-gray-900">Payment Method</h3>
+                <div className="space-y-2">
+                  {paymentMethods.map((method) => (
+                    <button
+                      key={method.id}
+                      onClick={() => setSelectedMethod(method.id)}
+                      className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 transition-all ${
+                        selectedMethod === method.id
+                          ? 'border-blue-600 bg-blue-50'
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <method.icon className={`w-6 h-6 ${
+                        selectedMethod === method.id ? 'text-blue-600' : 'text-gray-400'
+                      }`} />
+                      <div className="flex-1 text-left">
+                        <p className="font-medium text-gray-900">{method.label}</p>
+                        <p className="text-sm text-gray-500">{method.description}</p>
+                      </div>
+                      <div className={`w-5 h-5 rounded-full border-2 ${
+                        selectedMethod === method.id
+                          ? 'border-blue-600 bg-blue-600'
+                          : 'border-gray-300'
+                      } flex items-center justify-center`}>
+                        {selectedMethod === method.id && (
+                          <div className="w-2 h-2 bg-white rounded-full" />
+                        )}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Wallet Balance Info */}
+              {selectedMethod === 'demo-wallet' && (
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
                   <div className="flex items-center gap-3">
-                    <input
-                      type="radio"
-                      checked={selectedMethod === method.id}
-                      onChange={() => setSelectedMethod(method.id)}
-                      className="w-5 h-5 text-blue-600"
-                    />
-                    <method.icon className="w-6 h-6 text-gray-600" />
-                    <div className="flex-1">
-                      <div className="font-semibold text-gray-800">{method.label}</div>
-                      <div className="text-xs text-gray-500">{method.description}</div>
+                    <CreditCard className="w-5 h-5 text-blue-600" />
+                    <div>
+                      <p className="text-sm font-medium text-blue-900">Current Wallet Balance</p>
+                      <p className="text-lg font-bold text-blue-600">NPR {(user?.walletBalance || 0).toLocaleString()}</p>
                     </div>
                   </div>
                 </div>
-              ))}
+              )}
+
+              {/* Owner Information */}
+              <div className="bg-gray-50 rounded-xl p-4">
+                <h3 className="font-semibold text-gray-900 mb-3">Payment To</h3>
+                <div className="flex items-center gap-3">
+                  <img
+                    src={booking.owner?.picture || '/default-avatar.png'}
+                    alt={booking.owner?.name}
+                    className="w-12 h-12 rounded-full"
+                  />
+                  <div>
+                    <p className="font-medium text-gray-900">{booking.owner?.name}</p>
+                    <p className="text-sm text-gray-600">Vehicle Owner</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Payment Button */}
+              <button
+                onClick={handlePayment}
+                disabled={isProcessing}
+                className="w-full py-4 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+              >
+                {isProcessing ? (
+                  <>
+                    <Loader className="w-5 h-5 animate-spin" />
+                    Processing Payment...
+                  </>
+                ) : (
+                  <>
+                    <CreditCard className="w-5 h-5" />
+                    Pay NPR {fareBreakdown.total}
+                  </>
+                )}
+              </button>
             </div>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 p-6 rounded-b-2xl space-y-3">
-          <button
-            onClick={handlePayment}
-            disabled={!selectedMethod || isProcessing}
-            className={`w-full py-4 rounded-xl font-semibold text-lg transition-all ${
-              selectedMethod && !isProcessing
-                ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg hover:shadow-xl'
-                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-            }`}
-          >
-            {isProcessing ? 'Processing...' : `Pay NPR ${booking.totalPrice?.toLocaleString() || 0}`}
-          </button>
-          
-          <button
-            onClick={onClose}
-            disabled={isProcessing}
-            className="w-full py-3 rounded-xl font-semibold text-gray-700 bg-white border-2 border-gray-300 hover:bg-gray-50 transition disabled:opacity-50"
-          >
-            Cancel
-          </button>
-        </div>
+          </>
+        )}
       </div>
-
-      <style>{`
-        @keyframes successPop {
-          0% { transform: scale(0); opacity: 0; }
-          50% { transform: scale(1.2); }
-          100% { transform: scale(1); opacity: 1; }
-        }
-        .success-animation {
-          animation: successPop 0.6s ease-out;
-        }
-      `}</style>
     </div>
   );
 };

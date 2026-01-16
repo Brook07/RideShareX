@@ -7,13 +7,13 @@ const paymentSchema = new mongoose.Schema({
     ref: "Booking",
     required: true
   },
-  // User who made the payment
+  // User who made the payment (payer)
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
     required: true
   },
-  // Vehicle owner who receives the payment
+  // Vehicle owner who receives the payment (receiver)
   owner: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
@@ -24,6 +24,15 @@ const paymentSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Vehicle",
     required: true
+  },
+  // Store booking details snapshot (in case booking is deleted)
+  bookingDetails: {
+    pickupDate: Date,
+    dropoffDate: Date,
+    totalDays: Number,
+    pickupLocation: String,
+    vehicleName: String,
+    vehicleModel: String
   },
   // Amount breakdown
   amount: {
@@ -44,10 +53,10 @@ const paymentSchema = new mongoose.Schema({
       required: true
     }
   },
-  // Payment method (DEMO)
+  // Payment method
   paymentMethod: {
     type: String,
-    enum: ['Demo Wallet', 'Demo QR Pay', 'Cash'],
+    enum: ['Demo Wallet', 'Cash'],
     required: true
   },
   // Payment status
@@ -56,7 +65,7 @@ const paymentSchema = new mongoose.Schema({
     enum: ['PENDING', 'PROCESSING', 'COMPLETED', 'FAILED', 'REFUNDED'],
     default: 'PENDING'
   },
-  // Demo transaction ID
+  // Unique transaction ID
   transactionId: {
     type: String,
     required: true,
@@ -77,7 +86,7 @@ const paymentSchema = new mongoose.Schema({
     type: String,
     default: null
   },
-  // Demo: Random success/failure (10% fail rate)
+  // Flag to identify demo transactions
   isDemoTransaction: {
     type: Boolean,
     default: true
