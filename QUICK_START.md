@@ -125,7 +125,7 @@ npm start
 8. Select payment method (Demo Wallet)
 9. Click **"Pay NPR 8,999"**
 10. Wait 2-3 seconds (processing animation)
-11. See success screen ✅
+11. See success screen 
 12. View transaction ID
 13. Auto-redirect to bookings
 

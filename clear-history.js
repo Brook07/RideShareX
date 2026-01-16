@@ -16,10 +16,10 @@ async function clearHistory() {
         }
       });
       
-      console.log('✅ Success:', response.data.message);
-      console.log(`🗑️  Deleted ${response.data.deletedCount} transactions`);
+      console.log('Success:', response.data.message);
+      console.log(`Deleted ${response.data.deletedCount} transactions`);
     } catch (error) {
-      console.error('❌ Error:', error.response?.data?.message || error.message);
+      console.error('Error:', error.response?.data?.message || error.message);
     } finally {
       rl.close();
     }
