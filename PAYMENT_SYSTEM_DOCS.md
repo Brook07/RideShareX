@@ -1,4 +1,4 @@
-![1768493013193](image/PAYMENT_SYSTEM_DOCS/1768493013193.png)![1768493029583](image/PAYMENT_SYSTEM_DOCS/1768493029583.png)![1768493033467](image/PAYMENT_SYSTEM_DOCS/1768493033467.png)![1768493040777](image/PAYMENT_SYSTEM_DOCS/1768493040777.png)![1768493058075](image/PAYMENT_SYSTEM_DOCS/1768493058075.png)![1768493108101](image/PAYMENT_SYSTEM_DOCS/1768493108101.png)![1768493118586](image/PAYMENT_SYSTEM_DOCS/1768493118586.png)![1768493125978](image/PAYMENT_SYSTEM_DOCS/1768493125978.png)![1768493142785](image/PAYMENT_SYSTEM_DOCS/1768493142785.png)![1768493400667](image/PAYMENT_SYSTEM_DOCS/1768493400667.png)# RideShareX Demo Payment System Documentation
+RideShareX Demo Payment System Documentation
 
 ## Overview
 This document describes the **Demo Payment System** implemented for RideShareX - a vehicle rental platform. This is a **simulated payment system** designed for academic/project demonstration purposes with **NO real money transactions**.

@@ -114,7 +114,7 @@ exports.processDemoPayment = async (req, res) => {
 
       await failedPayment.save();
 
-      console.log("❌ Demo payment failed:", failedPayment.transactionId);
+      console.log("Demo payment failed:", failedPayment.transactionId);
 
       return res.status(400).json({
         success: false,
@@ -157,7 +157,7 @@ exports.processDemoPayment = async (req, res) => {
       owner.walletBalance += totalPrice;
       await owner.save();
 
-      console.log(`💰 Wallet transaction: User ${user.name} paid NPR ${totalPrice} to ${owner.name}`);
+      console.log(`Wallet transaction: User ${user.name} paid NPR ${totalPrice} to ${owner.name}`);
     }
 
     // Create payment record with booking details snapshot
@@ -449,7 +449,7 @@ exports.clearUserPaymentHistory = async (req, res) => {
       ]
     });
 
-    console.log(`🗑️ Cleared ${result.deletedCount} transactions for user ${userId}`);
+    console.log(`Cleared ${result.deletedCount} transactions for user ${userId}`);
 
     res.json({
       success: true,
