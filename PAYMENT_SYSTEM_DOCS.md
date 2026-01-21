@@ -1,5 +1,6 @@
 RideShareX Demo Payment System Documentation
 
+
 ## Overview
 This document describes the **Demo Payment System** implemented for RideShareX - a vehicle rental platform. This is a **simulated payment system** designed for academic/project demonstration purposes with **NO real money transactions**.
 
