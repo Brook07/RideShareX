@@ -66,7 +66,23 @@ export default function RentalRequestsPage() {
     }
   };
 
-  const getStatusBadge = (status) => {
+  const getStatusBadge = (status, paymentStatus) => {
+    // Special case: Confirmed but awaiting payment
+    if (status === 'CONFIRMED' && paymentStatus !== 'COMPLETED') {
+      return (
+        <div className="flex flex-col gap-1">
+          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+            <CheckCircle className="w-4 h-4" />
+            Booking Confirmed
+          </span>
+          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-800 border border-orange-300">
+            <AlertCircle className="w-3 h-3" />
+            Awaiting Payment
+          </span>
+        </div>
+      );
+    }
+
     const statusConfig = {
       PENDING: {
         bg: "bg-yellow-100",
@@ -359,7 +375,7 @@ export default function RentalRequestsPage() {
                             <p className="text-sm font-medium text-blue-600">NPR {request.totalPrice?.toLocaleString()}</p>
                           </div>
                         </div>
-                        {getStatusBadge(request.status)}
+                        {getStatusBadge(request.status, request.paymentStatus)}
                       </div>
                     </div>
                   ))}

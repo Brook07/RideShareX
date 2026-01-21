@@ -54,6 +54,13 @@ const userSchema = new mongoose.Schema({
     default: false
   },
   
+  // Demo wallet balance (for demo payments)
+  walletBalance: {
+    type: Number,
+    default: 100000,
+    min: 0
+  },
+  
   // Timestamps
   createdAt: {
     type: Date,

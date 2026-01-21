@@ -39,6 +39,7 @@ export function AuthProvider({ children }) {
           console.error('Failed to load user:', error);
           localStorage.removeItem('token');
           setToken(null);
+          setUser(null);
         }
       }
       
@@ -66,12 +67,24 @@ export function AuthProvider({ children }) {
     setUser(prev => ({ ...prev, ...updatedData }));
   };
 
+  const refreshUser = async () => {
+    try {
+      const response = await axios.get('/api/auth/me');
+      setUser(response.data.user);
+      return response.data.user;
+    } catch (error) {
+      console.error('Failed to refresh user:', error);
+      throw error;
+    }
+  };
+
   const value = {
     user,
     token,
     login,
     logout,
     updateUser,
+    refreshUser,
     loading
   };
 

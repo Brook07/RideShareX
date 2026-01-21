@@ -22,9 +22,11 @@ export default function ManageVehiclesPage() {
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(null);
+  const [activeBookings, setActiveBookings] = useState({});
 
   useEffect(() => {
     fetchUserVehicles();
+    fetchActiveBookings();
   }, []);
 
   const fetchUserVehicles = async () => {
@@ -38,6 +40,38 @@ export default function ManageVehiclesPage() {
       console.error("Fetch vehicles error:", err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchActiveBookings = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get("http://localhost:5000/api/bookings/rental-requests", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      // Create a map of vehicle ID to active booking info
+      const bookingsMap = {};
+      if (res.data.bookings) {
+        res.data.bookings.forEach(booking => {
+          // Only include confirmed bookings with completed payments
+          if (booking.status === 'CONFIRMED' && booking.paymentStatus === 'COMPLETED') {
+            const vehicleId = booking.vehicle?._id || booking.vehicle;
+            bookingsMap[vehicleId] = {
+              renterName: booking.user?.name || 'User',
+              renterEmail: booking.user?.email || '',
+              pickupDate: booking.pickupDate,
+              dropoffDate: booking.dropoffDate,
+              totalPrice: booking.totalPrice,
+              status: booking.status,
+              paymentStatus: booking.paymentStatus
+            };
+          }
+        });
+      }
+      setActiveBookings(bookingsMap);
+    } catch (err) {
+      console.error("Fetch bookings error:", err);
     }
   };
 
@@ -66,6 +100,12 @@ export default function ManageVehiclesPage() {
   };
 
   const deleteVehicle = async (vehicleId) => {
+    // Check if vehicle has active booking
+    if (activeBookings[vehicleId]) {
+      alert("Cannot delete a vehicle that is currently rented. Please wait for the rental period to end.");
+      return;
+    }
+    
     if (!window.confirm("Are you sure you want to delete this vehicle?")) return;
     
     setActionLoading(vehicleId);
@@ -200,6 +240,13 @@ export default function ManageVehiclesPage() {
                   }`}>
                     {vehicle.status === "active" ? "Active" : "Inactive"}
                   </div>
+                  
+                  {/* Currently Rented Badge */}
+                  {activeBookings[vehicle._id] && (
+                    <div className="absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-bold bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg">
+                      🚗 Currently in Booking
+                    </div>
+                  )}
                 </div>
 
                 {/* Vehicle Info */}
@@ -226,17 +273,34 @@ export default function ManageVehiclesPage() {
                     </div>
                   </div>
 
+                  {/* Current Booking Info */}
+                  {activeBookings[vehicle._id] && (
+                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300 rounded-lg p-3 mb-4">
+                      <div className="flex items-center gap-2 text-blue-900 font-semibold mb-2 text-sm">
+                        <CheckCircle className="w-4 h-4" />
+                        Active Rental - Payment Completed
+                      </div>
+                      <div className="text-xs text-gray-700 space-y-1">
+                        <p><strong>Rented by:</strong> {activeBookings[vehicle._id].renterName}</p>
+                        <p><strong>Pickup:</strong> {new Date(activeBookings[vehicle._id].pickupDate).toLocaleDateString()}</p>
+                        <p><strong>Return:</strong> {new Date(activeBookings[vehicle._id].dropoffDate).toLocaleDateString()}</p>
+                        <p><strong>Amount:</strong> NPR {activeBookings[vehicle._id].totalPrice?.toLocaleString()}</p>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Action Buttons */}
                   <div className="flex items-center gap-2 pt-4 border-t">
-                    {/* Toggle Status */}
+                    {/* Toggle Status - Disabled for active rentals */}
                     <button
                       onClick={() => toggleVehicleStatus(vehicle._id, vehicle.status)}
-                      disabled={actionLoading === vehicle._id}
+                      disabled={actionLoading === vehicle._id || activeBookings[vehicle._id]}
+                      title={activeBookings[vehicle._id] ? "Cannot change status while vehicle is rented" : ""}
                       className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
                         vehicle.status === "active"
                           ? "bg-orange-100 text-orange-700 hover:bg-orange-200"
                           : "bg-green-100 text-green-700 hover:bg-green-200"
-                      } ${actionLoading === vehicle._id ? "opacity-50 cursor-not-allowed" : ""}`}
+                      } ${actionLoading === vehicle._id || activeBookings[vehicle._id] ? "opacity-50 cursor-not-allowed" : ""}`}
                     >
                       {actionLoading === vehicle._id ? (
                         <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
@@ -262,12 +326,14 @@ export default function ManageVehiclesPage() {
                       <Edit className="w-5 h-5" />
                     </button>
 
-                    {/* Delete Button */}
+                    {/* Delete Button - Disabled for active rentals */}
                     <button
                       onClick={() => deleteVehicle(vehicle._id)}
-                      disabled={actionLoading === vehicle._id}
-                      className="p-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"
-                      title="Delete Vehicle"
+                      disabled={actionLoading === vehicle._id || activeBookings[vehicle._id]}
+                      title={activeBookings[vehicle._id] ? "Cannot delete while vehicle is rented" : "Delete Vehicle"}
+                      className={`p-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors ${
+                        activeBookings[vehicle._id] ? "opacity-50 cursor-not-allowed" : ""
+                      }`}
                     >
                       <Trash2 className="w-5 h-5" />
                     </button>
