@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
-import { Calendar, Users, Fuel, Settings, ArrowLeft, MessageSquare, CheckCircle, Clock, MapPin, Star } from 'lucide-react';
+import { Calendar, Users, Fuel, Settings, ArrowLeft, MessageSquare, CheckCircle, Clock, MapPin, Star, AlertCircle, Shield } from 'lucide-react';
 import Navbar from '../../components/common/Navbar';
+import { useAuth } from '../../context/AuthContext';
 
 export default function BookNowPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuth();
   
   // Get vehicle data from navigation state
   const vehicle = location.state?.vehicle || null;
@@ -174,6 +176,52 @@ export default function BookNowPage() {
             <p className="text-gray-600">Complete your booking details below</p>
           </div>
 
+          {/* Verification Warning */}
+          {!user?.isVerified && (
+            <div className="mb-6 bg-yellow-50 border-2 border-yellow-400 rounded-xl p-6">
+              <div className="flex items-start gap-4">
+                <div className="p-3 bg-yellow-100 rounded-lg">
+                  <Shield className="w-6 h-6 text-yellow-600" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-yellow-900 mb-2">Verification Required</h3>
+                  <p className="text-yellow-800 mb-4">
+                    You need to verify your account with a citizenship document before making bookings.
+                  </p>
+                  {user?.verificationStatus === 'NOT_SUBMITTED' && (
+                    <p className="text-sm text-yellow-700 mb-4">
+                      <strong>Status:</strong> Not submitted. Please upload your citizenship document.
+                    </p>
+                  )}
+                  {user?.verificationStatus === 'PENDING' && (
+                    <p className="text-sm text-yellow-700 mb-4">
+                      <strong>Status:</strong> Under review. Your document is being verified by our admin team.
+                    </p>
+                  )}
+                  {user?.verificationStatus === 'REJECTED' && (
+                    <div className="mb-4">
+                      <p className="text-sm text-red-700 font-semibold">
+                        <strong>Status:</strong> Rejected
+                      </p>
+                      {user?.rejectionReason && (
+                        <p className="text-sm text-red-600 mt-1">
+                          <strong>Reason:</strong> {user.rejectionReason}
+                        </p>
+                      )}
+                      <p className="text-sm text-yellow-700 mt-1">Please upload a clear document again.</p>
+                    </div>
+                  )}
+                  <button
+                    onClick={() => navigate('/dashboard?tab=profile')}
+                    className="px-6 py-3 bg-yellow-600 text-white font-semibold rounded-lg hover:bg-yellow-700 transition-colors"
+                  >
+                    Go to Profile & Upload Document
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Left Column - Vehicle Details */}
             <div className="lg:col-span-2 space-y-6">
@@ -316,12 +364,17 @@ export default function BookNowPage() {
 
                 <button 
                   onClick={handleBooking}
-                  disabled={loading}
+                  disabled={loading || !user?.isVerified}
                   className={`w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 rounded-lg transition duration-200 shadow-md hover:shadow-lg ${
-                    loading ? 'opacity-70 cursor-not-allowed' : ''
+                    (loading || !user?.isVerified) ? 'opacity-70 cursor-not-allowed' : ''
                   }`}
                 >
-                  {loading ? (
+                  {!user?.isVerified ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <Shield className="w-5 h-5" />
+                      Verification Required
+                    </span>
+                  ) : loading ? (
                     <span className="flex items-center justify-center gap-2">
                       <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                       Sending Request...
@@ -332,7 +385,13 @@ export default function BookNowPage() {
                 </button>
 
                 <div className="mt-4 text-center">
-                  <p className="text-sm text-gray-500">You won't be charged until the owner approves</p>
+                  {!user?.isVerified ? (
+                    <p className="text-sm text-yellow-600 font-medium">
+                      Complete verification to book vehicles
+                    </p>
+                  ) : (
+                    <p className="text-sm text-gray-500">You won't be charged until the owner approves</p>
+                  )}
                 </div>
               </div>
             </div>
