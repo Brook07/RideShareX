@@ -103,7 +103,7 @@ export default function AddVehiclePage() {
         ...vehicleData,
         year: parseInt(vehicleData.year),
         seats: parseInt(vehicleData.seats),
-        pricePerDay: parseFloat(vehicleData.pricePerDay),
+        pricePerDay: parseInt(vehicleData.pricePerDay),
         image: imageUrl
       }, {
         headers: {
@@ -114,21 +114,8 @@ export default function AddVehiclePage() {
       alert("Vehicle added successfully!");
       console.log(res.data);
 
-      // Reset form
-      setVehicleData({
-        name: "",
-        make: "",
-        model: "",
-        year: "",
-        seats: "",
-        location: "",
-        type: "",
-        fuelType: "",
-        plateNumber: "",
-        pricePerDay: ""
-      });
-      setImageFile(null);
-      setImagePreview(null);
+      // Redirect to vehicles page
+      navigate('/vehicles');
     } catch (err) {
       console.log(err);
       alert(err.response?.data?.message || "Failed to add vehicle");
@@ -370,7 +357,6 @@ export default function AddVehiclePage() {
               </select>
             </div>
 
-            {/* Price Per Day */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Price Per Day (₹) <span className="text-red-500">*</span>
@@ -380,7 +366,7 @@ export default function AddVehiclePage() {
                 name="pricePerDay"
                 placeholder="e.g., 1500"
                 min="0"
-                step="0.5"
+                step="1"
                 value={vehicleData.pricePerDay}
                 onChange={handleChange}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"

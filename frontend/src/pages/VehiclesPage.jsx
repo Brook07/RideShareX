@@ -22,8 +22,8 @@ export default function VehiclesPage() {
   const [loadingRecommendations, setLoadingRecommendations] = useState(false);
   const [searchParams, setSearchParams] = useState(location.state || {});
   const [sortBy, setSortBy] = useState('recommended');
-  const [searchLocation, setSearchLocation] = useState('');
-  const [searchVehicleType, setSearchVehicleType] = useState('all');
+  const [searchLocation, setSearchLocation] = useState(location.state?.location || '');
+  const [searchVehicleType, setSearchVehicleType] = useState(location.state?.vehicleType || 'all');
 
 useEffect(() => {
   const fetchVehicles = async () => {
@@ -188,11 +188,20 @@ useEffect(() => {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {recommendations.map((vehicle) => (
+              {recommendations.map((vehicle) => {
+                const isOwnVehicle = user && vehicle.owner && (
+                  (typeof vehicle.owner === 'string' && (vehicle.owner === user.id || vehicle.owner === user._id)) ||
+                  (typeof vehicle.owner === 'object' && vehicle.owner._id && (vehicle.owner._id === user.id || vehicle.owner._id === user._id)) ||
+                  (typeof vehicle.owner === 'object' && vehicle.owner.id && (vehicle.owner.id === user.id || vehicle.owner.id === user._id))
+                );
+                
+                return (
                 <div
                   key={vehicle.id}
-                  className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all cursor-pointer border-2 border-blue-200"
-                  onClick={() => navigate('/book-now', { state: { vehicle } })}
+                  className={`bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all border-2 border-blue-200 ${
+                    isOwnVehicle ? 'cursor-default' : 'cursor-pointer'
+                  }`}
+                  onClick={() => !isOwnVehicle && navigate('/book-now', { state: { vehicle } })}
                 >
                   {/* Recommendation Badge */}
                   <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2 text-sm font-semibold flex items-center gap-2">
@@ -237,23 +246,13 @@ useEffect(() => {
                       </div>
                     </div>
 
-                    <div className="mb-4 space-y-1">
-                      {vehicle.plateNumber && (
+                    {vehicle.plateNumber && (
+                      <div className="mb-4">
                         <p className="text-sm text-gray-500">
                           Plate: <span className="font-medium text-gray-700">{vehicle.plateNumber}</span>
                         </p>
-                      )}
-                      <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-1">
-                          <Star className={`w-4 h-4 ${vehicle.rating > 0 ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} />
-                          <span className="text-sm font-semibold">{vehicle.rating.toFixed(1)}</span>
-                          <span className="text-xs text-gray-500">({vehicle.totalRatings})</span>
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          {vehicle.completedBookings === 0 ? 'New listing' : `${vehicle.completedBookings} ${vehicle.completedBookings === 1 ? 'trip' : 'trips'}`}
-                        </div>
                       </div>
-                    </div>
+                    )}
 
                     {/* Features */}
                     <div className="grid grid-cols-3 gap-2 pt-4 border-t">
@@ -277,18 +276,26 @@ useEffect(() => {
                       </div>
                     </div>
 
-                    <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate('/book-now', { state: { vehicle } });
-                      }}
-                      className="w-full mt-4 px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-lg transition-all"
-                    >
-                      Book Now
-                    </button>
+                    {/* Check if current user is the owner */}
+                    {isOwnVehicle ? (
+                      <div className="w-full mt-4 px-4 py-3 bg-gray-100 text-gray-600 font-bold rounded-lg text-center">
+                        Your Vehicle
+                      </div>
+                    ) : (
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate('/book-now', { state: { vehicle } });
+                        }}
+                        className="w-full mt-4 px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-lg transition-all"
+                      >
+                        Book Now
+                      </button>
+                    )}
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
@@ -355,10 +362,8 @@ useEffect(() => {
                 onChange={(e) => setSortBy(e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none bg-white"
               >
-                <option value="recommended">Recommended</option>
                 <option value="price-low">Price: Low to High</option>
                 <option value="price-high">Price: High to Low</option>
-                <option value="rating">Rating: High to Low</option>
               </select>
             </div>
           </div>
@@ -376,11 +381,20 @@ useEffect(() => {
 
         {/* Vehicle Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {sortedVehicles.map((vehicle) => (
+          {sortedVehicles.map((vehicle) => {
+            const isOwnVehicle = user && vehicle.owner && (
+              (typeof vehicle.owner === 'string' && (vehicle.owner === user.id || vehicle.owner === user._id)) ||
+              (typeof vehicle.owner === 'object' && vehicle.owner._id && (vehicle.owner._id === user.id || vehicle.owner._id === user._id)) ||
+              (typeof vehicle.owner === 'object' && vehicle.owner.id && (vehicle.owner.id === user.id || vehicle.owner.id === user._id))
+            );
+            
+            return (
             <div
               key={vehicle.id}
-              className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer"
-              onClick={() => navigate('/book-now', { state: { vehicle } })}
+              className={`bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow ${
+                isOwnVehicle ? 'cursor-default' : 'cursor-pointer'
+              }`}
+              onClick={() => !isOwnVehicle && navigate('/book-now', { state: { vehicle } })}
             >
               {/* Image */}
               <div className="relative h-48 overflow-hidden">
@@ -409,23 +423,13 @@ useEffect(() => {
                   <span>{vehicle.location}</span>
                 </div>
 
-                <div className="mb-4 space-y-1">
-                  {vehicle.plateNumber && (
+                {vehicle.plateNumber && (
+                  <div className="mb-4">
                     <p className="text-sm text-gray-500">
                       Plate: <span className="font-medium text-gray-700">{vehicle.plateNumber}</span>
                     </p>
-                  )}
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-1">
-                      <Star className={`w-4 h-4 ${vehicle.rating > 0 ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} />
-                      <span className="text-sm font-semibold">{vehicle.rating.toFixed(1)}</span>
-                      <span className="text-xs text-gray-500">({vehicle.totalRatings} {vehicle.totalRatings === 1 ? 'rating' : 'ratings'})</span>
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      {vehicle.completedBookings === 0 ? 'New listing' : `${vehicle.completedBookings} ${vehicle.completedBookings === 1 ? 'trip' : 'trips'}`}
-                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Features */}
                 <div className="grid grid-cols-3 gap-2 pt-4 border-t">
@@ -451,18 +455,26 @@ useEffect(() => {
                   </div>
                 </div>
 
-                <button 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    navigate('/book-now', { state: { vehicle } });
-                  }}
-                  className="w-full mt-4 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors"
-                >
-                  Book Now
-                </button>
+                {/* Check if current user is the owner */}
+                {isOwnVehicle ? (
+                  <div className="w-full mt-4 px-4 py-3 bg-gray-100 text-gray-600 font-bold rounded-lg text-center">
+                    Your Vehicle
+                  </div>
+                ) : (
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate('/book-now', { state: { vehicle } });
+                    }}
+                    className="w-full mt-4 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors"
+                  >
+                    Book Now
+                  </button>
+                )}
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>

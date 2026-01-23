@@ -20,6 +20,7 @@ export default function BookNowPage() {
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [bookingSuccess, setBookingSuccess] = useState(false);
+  const [similarVehicles, setSimilarVehicles] = useState([]);
 
   // Set default dates (tomorrow and day after)
   useEffect(() => {
@@ -30,7 +31,10 @@ export default function BookNowPage() {
     
     setPickupDate(tomorrow.toISOString().split('T')[0]);
     setDropoffDate(dayAfter.toISOString().split('T')[0]);
-  }, []);
+    
+    // Scroll to top when vehicle changes
+    window.scrollTo(0, 0);
+  }, [vehicle?.id]);
 
   // Use actual image from Cloudinary, fallback to default
   const vehicleImage = vehicle?.image && vehicle.image !== '/photos/default-car.jpg'
@@ -42,6 +46,53 @@ export default function BookNowPage() {
   useEffect(() => {
     calculatePrice();
   }, [pickupDate, dropoffDate, pricePerDay]);
+
+  // Fetch similar vehicles based on type
+  useEffect(() => {
+    const fetchSimilarVehicles = async () => {
+      if (!vehicle) return;
+      
+      try {
+        const res = await axios.get("http://localhost:5000/api/vehicles");
+        
+        // Filter vehicles of the same type, excluding current vehicle and user's own vehicles
+        const similar = res.data.vehicles
+          .filter(v => 
+            v._id !== vehicle.id && // Not the current vehicle
+            v.type === vehicle.type && // Same type
+            v.status === 'active' && // Active vehicles
+            (!user || (v.owner._id !== user.id && v.owner._id !== user._id)) // Not user's own vehicle
+          )
+          .slice(0, 4) // Get max 4 recommendations
+          .map(v => ({
+            id: v._id,
+            name: v.name,
+            plateNumber: v.plateNumber || null,
+            owner: v.owner,
+            make: v.make,
+            model: v.model,
+            year: v.year,
+            type: v.type || 'car',
+            image: v.image && v.image !== '/photos/default-car.jpg' 
+              ? v.image 
+              : "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=500",
+            pricePerDay: v.pricePerDay || 2000,
+            location: v.location || v.ownerLocation || "Kathmandu",
+            rating: v.rating || 0,
+            totalRatings: v.totalRatings || 0,
+            seats: v.seats || 4,
+            fuel: v.fuelType || "Petrol",
+            transmission: "Manual"
+          }));
+        
+        setSimilarVehicles(similar);
+      } catch (err) {
+        console.error("Error fetching similar vehicles:", err);
+      }
+    };
+
+    fetchSimilarVehicles();
+  }, [vehicle, user]);
 
   const calculatePrice = () => {
     if (pickupDate && dropoffDate) {
@@ -126,6 +177,49 @@ export default function BookNowPage() {
               className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
             >
               Browse Vehicles
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Check if user is trying to book their own vehicle
+  // Debug logging
+  console.log('Current User:', user);
+  console.log('Vehicle Owner:', vehicle.owner);
+  console.log('Vehicle Owner ID:', typeof vehicle.owner === 'object' ? vehicle.owner?._id || vehicle.owner?.id : vehicle.owner);
+  console.log('User ID:', user?.id || user?._id);
+  
+  const isOwnVehicle = user && vehicle.owner && (
+    // Check if owner is a string (just ID) - compare with user.id or user._id
+    (typeof vehicle.owner === 'string' && (vehicle.owner === user.id || vehicle.owner === user._id)) ||
+    // Check if owner is an object with _id - compare with user.id or user._id
+    (typeof vehicle.owner === 'object' && vehicle.owner._id && (vehicle.owner._id === user.id || vehicle.owner._id === user._id)) ||
+    // Check if owner is an object with id - compare with user.id or user._id
+    (typeof vehicle.owner === 'object' && vehicle.owner.id && (vehicle.owner.id === user.id || vehicle.owner.id === user._id))
+  );
+
+  console.log('Is Own Vehicle:', isOwnVehicle);
+
+  if (isOwnVehicle) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navbar />
+        <div className="flex items-center justify-center h-96">
+          <div className="text-center bg-white p-8 rounded-2xl shadow-lg max-w-md mx-4">
+            <div className="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <AlertCircle className="w-10 h-10 text-yellow-600" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">Cannot Book Your Own Vehicle</h2>
+            <p className="text-gray-600 mb-6">
+              You cannot send a booking request for your own vehicle. Please browse other available vehicles.
+            </p>
+            <button
+              onClick={() => navigate('/vehicles')}
+              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold"
+            >
+              Browse Other Vehicles
             </button>
           </div>
         </div>
@@ -396,6 +490,81 @@ export default function BookNowPage() {
               </div>
             </div>
           </div>
+
+          {/* Similar Vehicles Recommendations */}
+          {similarVehicles.length > 0 && (
+            <div className="max-w-6xl mx-auto mt-12 px-4 md:px-0">
+              <div className="mb-6">
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                  Similar {vehicle.type === 'car' ? 'Cars' : vehicle.type === 'bike' ? 'Bikes' : 'Scooters'} You Might Like
+                </h2>
+                <p className="text-gray-600">Explore other {vehicle.type}s available for booking</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {similarVehicles.map((similarVehicle) => (
+                  <div
+                    key={similarVehicle.id}
+                    className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all cursor-pointer"
+                    onClick={() => navigate('/book-now', { state: { vehicle: similarVehicle } })}
+                  >
+                    {/* Image */}
+                    <div className="relative h-40 overflow-hidden">
+                      <img
+                        src={similarVehicle.image}
+                        alt={similarVehicle.name}
+                        className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
+                      />
+                      <div className="absolute top-3 right-3 bg-white px-2 py-1 rounded-full text-xs font-bold text-gray-900">
+                        NPR {similarVehicle.pricePerDay}/day
+                      </div>
+                    </div>
+
+                    {/* Content */}
+                    <div className="p-4">
+                      <h3 className="text-lg font-bold text-gray-900 mb-1 truncate">
+                        {similarVehicle.name}
+                      </h3>
+                      <p className="text-sm text-gray-600 mb-2 truncate">
+                        {similarVehicle.make} {similarVehicle.model} • {similarVehicle.year}
+                      </p>
+
+                      <div className="flex items-center gap-2 mb-4 text-sm text-gray-600">
+                        <MapPin className="w-4 h-4 text-gray-400" />
+                        <span className="truncate">{similarVehicle.location}</span>
+                      </div>
+
+                      {/* Features */}
+                      <div className="grid grid-cols-3 gap-2 pt-3 border-t">
+                        <div className="flex flex-col items-center">
+                          <Users className="w-4 h-4 text-gray-400 mb-1" />
+                          <span className="text-xs text-gray-600">{similarVehicle.seats}</span>
+                        </div>
+                        <div className="flex flex-col items-center">
+                          <Fuel className="w-4 h-4 text-gray-400 mb-1" />
+                          <span className="text-xs text-gray-600">{similarVehicle.fuel}</span>
+                        </div>
+                        <div className="flex flex-col items-center">
+                          <Settings className="w-4 h-4 text-gray-400 mb-1" />
+                          <span className="text-xs text-gray-600">Manual</span>
+                        </div>
+                      </div>
+
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate('/book-now', { state: { vehicle: similarVehicle } });
+                        }}
+                        className="w-full mt-3 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg transition-colors"
+                      >
+                        Book Now
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
