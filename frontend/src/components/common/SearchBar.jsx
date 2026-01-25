@@ -12,10 +12,7 @@ export default function SearchBar({ onSearch }) {
   };
 
   const handleSearch = () => {
-    if (!searchData.location) {
-      alert('Please select a location');
-      return;
-    }
+    // Allow search even without location selected
     onSearch(searchData);
   };
 

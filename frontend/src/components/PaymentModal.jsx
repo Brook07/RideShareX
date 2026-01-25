@@ -189,25 +189,12 @@ const PaymentModal = ({ booking, isOpen, onClose, onPaymentSuccess }) => {
                 </div>
               </div>
 
-              {/* Fare Breakdown */}
+              {/* Total Amount */}
               <div className="space-y-3">
-                <h3 className="font-semibold text-gray-900">Fare Breakdown</h3>
-                <div className="bg-gray-50 rounded-xl p-4 space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Base Fare</span>
-                    <span className="font-medium">NPR {fareBreakdown.baseFare}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Distance Fare</span>
-                    <span className="font-medium">NPR {fareBreakdown.distanceFare}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Service Fee</span>
-                    <span className="font-medium">NPR {fareBreakdown.serviceFee}</span>
-                  </div>
-                  <div className="flex justify-between pt-2 border-t border-gray-200">
+                <div className="bg-gray-50 rounded-xl p-4">
+                  <div className="flex justify-between items-center">
                     <span className="font-semibold text-gray-900">Total Amount</span>
-                    <span className="text-xl font-bold text-blue-600">NPR {fareBreakdown.total}</span>
+                    <span className="text-2xl font-bold text-blue-600">NPR {fareBreakdown.total}</span>
                   </div>
                 </div>
               </div>
@@ -254,7 +241,7 @@ const PaymentModal = ({ booking, isOpen, onClose, onPaymentSuccess }) => {
                     <CreditCard className="w-5 h-5 text-blue-600" />
                     <div>
                       <p className="text-sm font-medium text-blue-900">Current Wallet Balance</p>
-                      <p className="text-lg font-bold text-blue-600">NPR {(user?.walletBalance || 0).toLocaleString()}</p>
+                      <p className="text-lg font-bold text-blue-600">NPR {(user?.walletBalance ?? 10000).toLocaleString()}</p>
                     </div>
                   </div>
                 </div>

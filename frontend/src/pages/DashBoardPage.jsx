@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/common/Navbar';
 import axios from 'axios';
-import { Car, Calendar, DollarSign, Star, Mail, Phone, MapPin, ChevronRight, Clock, CheckCircle, XCircle, AlertCircle, Wallet, ArrowUpRight, ArrowDownLeft, CreditCard, RefreshCw, Pencil, Save } from 'lucide-react';
+import { Car, Calendar, DollarSign, Star, Mail, Phone, MapPin, ChevronRight, Clock, CheckCircle, XCircle, AlertCircle, Wallet, ArrowUpRight, ArrowDownLeft, CreditCard, RefreshCw, Pencil, Save, Upload, FileCheck, FileX, Shield } from 'lucide-react';
 
 export default function DashboardPage() {
   const navigate = useNavigate();
@@ -26,6 +26,10 @@ export default function DashboardPage() {
   const [profileForm, setProfileForm] = useState({ name: '', phone: '', city: '' });
   const [profileError, setProfileError] = useState('');
   const [savingProfile, setSavingProfile] = useState(false);
+  const [citizenshipFile, setCitizenshipFile] = useState(null);
+  const [uploadingCitizenship, setUploadingCitizenship] = useState(false);
+  const [citizenshipError, setCitizenshipError] = useState('');
+  const [citizenshipSuccess, setCitizenshipSuccess] = useState('');
 
   // Fetch real bookings from API
   useEffect(() => {
@@ -215,6 +219,101 @@ export default function DashboardPage() {
       setProfileError(err.response?.data?.message || 'Failed to update profile');
     } finally {
       setSavingProfile(false);
+    }
+  };
+
+  const handleCitizenshipFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file size (5MB max)
+      if (file.size > 5 * 1024 * 1024) {
+        setCitizenshipError('File size must be less than 5MB');
+        return;
+      }
+      // Validate file type
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+      if (!allowedTypes.includes(file.type)) {
+        setCitizenshipError('Only JPG and PNG image files are allowed');
+        return;
+      }
+      setCitizenshipFile(file);
+      setCitizenshipError('');
+    }
+  };
+
+  const handleCitizenshipUpload = async () => {
+    if (!citizenshipFile) {
+      setCitizenshipError('Please select a file first');
+      return;
+    }
+
+    setUploadingCitizenship(true);
+    setCitizenshipError('');
+    setCitizenshipSuccess('');
+
+    try {
+      // Upload to Cloudinary first
+      const CLOUD_NAME = process.env.REACT_APP_CLOUDINARY_CLOUD_NAME;
+      const UPLOAD_PRESET = process.env.REACT_APP_CLOUDINARY_UPLOAD_PRESET;
+
+      const formData = new FormData();
+      formData.append('file', citizenshipFile);
+      formData.append('upload_preset', UPLOAD_PRESET);
+      formData.append('folder', 'citizenship_documents');
+
+      const cloudinaryRes = await fetch(
+        `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
+        {
+          method: 'POST',
+          body: formData,
+        }
+      );
+
+      const cloudinaryData = await cloudinaryRes.json();
+
+      if (cloudinaryData.error) {
+        throw new Error(cloudinaryData.error.message);
+      }
+
+      const citizenshipUrl = cloudinaryData.secure_url;
+
+      // Now send the URL to backend
+      const token = localStorage.getItem('token');
+      const res = await axios.post('http://localhost:5000/api/auth/upload-citizenship', 
+        { citizenshipUrl },
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      setCitizenshipSuccess('Citizenship document uploaded successfully! Awaiting admin verification.');
+      setCitizenshipFile(null);
+      
+      // Update user context
+      if (res.data?.user) {
+        updateUser({
+          citizenshipPhoto: res.data.user.citizenshipPhoto,
+          verificationStatus: res.data.user.verificationStatus,
+          isVerified: res.data.user.isVerified
+        });
+      }
+
+      // Refresh user data
+      const userRes = await axios.get('http://localhost:5000/api/auth/me', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (userRes.data?.user) {
+        updateUser(userRes.data.user);
+      }
+
+    } catch (err) {
+      console.error('Citizenship upload error:', err);
+      setCitizenshipError(err.response?.data?.message || err.message || 'Failed to upload citizenship document');
+    } finally {
+      setUploadingCitizenship(false);
     }
   };
 
@@ -466,6 +565,126 @@ export default function DashboardPage() {
                   <div className="px-4 py-3 bg-gray-50 rounded-lg text-gray-900">{user?.city || 'Not provided'}</div>
                 )}
               </div>
+            </div>
+
+            {/* Citizenship Verification Section */}
+            <div className="mt-8 bg-white rounded-xl shadow-md p-6 border-2 border-blue-100">
+              <div className="flex items-center gap-3 mb-4">
+                <Shield className="w-6 h-6 text-blue-600" />
+                <h2 className="text-xl font-bold text-gray-900">Account Verification</h2>
+              </div>
+
+              <p className="text-sm text-gray-600 mb-6">
+                Upload your citizenship document to verify your account. Verification is required to book vehicles or become a host.
+              </p>
+
+              {/* Verification Status Badge */}
+              <div className="mb-6">
+                {user?.verificationStatus === 'NOT_SUBMITTED' && (
+                  <div className="flex items-center gap-2 px-4 py-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <AlertCircle className="w-5 h-5 text-yellow-600" />
+                    <div>
+                      <p className="font-semibold text-yellow-800">Verification Pending</p>
+                      <p className="text-sm text-yellow-700">Please upload your citizenship document below</p>
+                    </div>
+                  </div>
+                )}
+
+                {user?.verificationStatus === 'PENDING' && (
+                  <div className="flex items-center gap-2 px-4 py-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <Clock className="w-5 h-5 text-blue-600" />
+                    <div>
+                      <p className="font-semibold text-blue-800">Under Review</p>
+                      <p className="text-sm text-blue-700">Your document is being verified by our admin team</p>
+                    </div>
+                  </div>
+                )}
+
+                {user?.verificationStatus === 'APPROVED' && (
+                  <div className="flex items-center gap-2 px-4 py-3 bg-green-50 border border-green-200 rounded-lg">
+                    <FileCheck className="w-5 h-5 text-green-600" />
+                    <div>
+                      <p className="font-semibold text-green-800">Verified ✓</p>
+                      <p className="text-sm text-green-700">Your account has been successfully verified</p>
+                      {user?.verificationDate && (
+                        <p className="text-xs text-green-600 mt-1">
+                          Verified on {new Date(user.verificationDate).toLocaleDateString()}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {user?.verificationStatus === 'REJECTED' && (
+                  <div className="px-4 py-3 bg-red-50 border border-red-200 rounded-lg">
+                    <div className="flex items-center gap-2 mb-2">
+                      <FileX className="w-5 h-5 text-red-600" />
+                      <p className="font-semibold text-red-800">Verification Rejected</p>
+                    </div>
+                    {user?.rejectionReason && (
+                      <p className="text-sm text-red-700 ml-7">Reason: {user.rejectionReason}</p>
+                    )}
+                    <p className="text-sm text-red-600 ml-7 mt-1">Please upload a clear document again</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Upload Form - Show only if not approved */}
+              {user?.verificationStatus !== 'APPROVED' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Upload Citizenship Document (JPG, PNG - Max 5MB)
+                  </label>
+                  
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <div className="flex-1">
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/jpg,image/png"
+                        onChange={handleCitizenshipFileChange}
+                        disabled={uploadingCitizenship}
+                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 disabled:opacity-50"
+                      />
+                      {citizenshipFile && (
+                        <p className="text-sm text-green-600 mt-2 flex items-center gap-1">
+                          <CheckCircle className="w-4 h-4" />
+                          Selected: {citizenshipFile.name}
+                        </p>
+                      )}
+                    </div>
+                    
+                    <button
+                      onClick={handleCitizenshipUpload}
+                      disabled={!citizenshipFile || uploadingCitizenship}
+                      className="flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                      {uploadingCitizenship ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                          Uploading...
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="w-4 h-4" />
+                          Upload
+                        </>
+                      )}
+                    </button>
+                  </div>
+
+                  {citizenshipError && (
+                    <div className="mt-3 px-4 py-2 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+                      {citizenshipError}
+                    </div>
+                  )}
+
+                  {citizenshipSuccess && (
+                    <div className="mt-3 px-4 py-2 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">
+                      {citizenshipSuccess}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         )}

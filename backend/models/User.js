@@ -41,6 +41,21 @@ const userSchema = new mongoose.Schema({
     default: false
   },
   
+  // Citizenship Verification
+  citizenshipPhoto: {
+    type: String,
+    default: null
+  },
+  isVerified: {
+    type: Boolean,
+    default: false
+  },
+  verificationStatus: {
+    type: String,
+    enum: ['PENDING', 'APPROVED', 'REJECTED', 'NOT_SUBMITTED'],
+    default: 'NOT_SUBMITTED'
+  },
+  
   // User role - can be changed later through settings
   role: {
     type: String,

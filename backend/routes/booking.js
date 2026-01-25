@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const authMiddleware = require("../middleware/auth");
+const verifyUser = require("../middleware/verifyUser");
 const {
   createBooking,
   getUserBookings,
@@ -13,8 +14,8 @@ const {
 // All routes are protected
 router.use(authMiddleware);
 
-// Create a new booking
-router.post("/", createBooking);
+// Create a new booking - requires verification
+router.post("/", verifyUser, createBooking);
 
 // Get logged-in user's bookings (as renter)
 router.get("/user", getUserBookings);

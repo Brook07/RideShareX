@@ -14,6 +14,7 @@ import ManageVehiclesPage from './pages/vehicles/ManageVehiclesPage';
 import MyBookingsPage from './pages/bookings/MyBookingsPage';
 import RentalRequestsPage from './pages/bookings/RentalRequestsPage';
 import TransactionHistoryPage from './pages/TransactionHistoryPage';
+import AdminVerificationPage from './pages/AdminVerificationPage';
 import './styles/animations.css';
 
 // Cleanup localStorage on app load
@@ -124,6 +125,12 @@ function AppRoutes() {
       <Route path="/transactions" element={
         <ProtectedRoute>
           <TransactionHistoryPage />
+        </ProtectedRoute>
+      } />
+
+      <Route path="/admin/verifications" element={
+        <ProtectedRoute>
+          <AdminVerificationPage />
         </ProtectedRoute>
       } />
 

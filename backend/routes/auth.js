@@ -3,6 +3,23 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const authMiddleware = require('../middleware/auth');
+const multer = require('multer');
+
+// Configure multer for memory storage (for Cloudinary upload)
+const storage = multer.memoryStorage();
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = /jpeg|jpg|png/;
+    const mimetype = allowedTypes.test(file.mimetype);
+    if (mimetype) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only JPG and PNG image files are allowed'));
+    }
+  }
+});
 
 // Generate JWT Token
 const generateToken = (userId) => {
@@ -53,7 +70,10 @@ router.post('/google-login', async (req, res) => {
           city: user.city,
           role: user.role,
           hasListedVehicles: user.hasListedVehicles,
-          isProfileComplete: user.isProfileComplete
+          isProfileComplete: user.isProfileComplete,
+          isVerified: user.isVerified,
+          verificationStatus: user.verificationStatus,
+          citizenshipPhoto: user.citizenshipPhoto
         }
       });
     } else {
@@ -89,7 +109,9 @@ router.post('/google-login', async (req, res) => {
           isProfileComplete: false,
           role: 'user',
           hasListedVehicles: false,
-          walletBalance: 10000
+          walletBalance: 10000,
+          isVerified: false,
+          verificationStatus: 'NOT_SUBMITTED'
         }
       });
     }
@@ -140,6 +162,9 @@ router.post('/complete-profile', authMiddleware, async (req, res) => {
         city: user.city,
         role: user.role,
         hasListedVehicles: user.hasListedVehicles,
+        isVerified: user.isVerified,
+        verificationStatus: user.verificationStatus,
+        citizenshipPhoto: user.citizenshipPhoto,
         isProfileComplete: user.isProfileComplete,
         walletBalance: user.walletBalance || 10000
       }
@@ -173,6 +198,9 @@ router.get('/me', authMiddleware, async (req, res) => {
         city: user.city,
         role: user.role,
         hasListedVehicles: user.hasListedVehicles,
+        isVerified: user.isVerified,
+        verificationStatus: user.verificationStatus,
+        citizenshipPhoto: user.citizenshipPhoto,
         isProfileComplete: user.isProfileComplete,
         walletBalance: user.walletBalance || 10000,
         createdAt: user.createdAt,
@@ -217,6 +245,9 @@ router.patch('/profile', authMiddleware, async (req, res) => {
         name: user.name,
         picture: user.picture,
         phone: user.phone,
+        isVerified: user.isVerified,
+        verificationStatus: user.verificationStatus,
+        citizenshipPhoto: user.citizenshipPhoto,
         address: user.address,
         city: user.city,
         role: user.role,
@@ -229,6 +260,113 @@ router.patch('/profile', authMiddleware, async (req, res) => {
     });
   } catch (error) {
     console.error('Update profile error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// @route   POST /api/auth/upload-citizenship
+// @desc    Upload citizenship photo for verification (Cloudinary)
+// @access  Private
+router.post('/upload-citizenship', authMiddleware, async (req, res) => {
+  try {
+    const { citizenshipUrl } = req.body;
+
+    if (!citizenshipUrl) {
+      return res.status(400).json({ message: 'Citizenship URL is required' });
+    }
+
+    const user = await User.findById(req.userId);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Update user with citizenship photo URL from Cloudinary
+    user.citizenshipPhoto = citizenshipUrl;
+    user.verificationStatus = 'PENDING';
+    user.isVerified = false;
+
+    res.json({
+      message: 'Citizenship photo uploaded successfully. Awaiting admin verification.',
+      user: {
+        id: user._id,
+        citizenshipPhoto: user.citizenshipPhoto,
+        verificationStatus: user.verificationStatus,
+        isVerified: user.isVerified
+      }
+    });
+  } catch (error) {
+    console.error('Upload citizenship error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// @route   GET /api/auth/pending-verifications
+// @desc    Get all users pending verification (Admin only)
+// @access  Private (Admin)
+router.get('/pending-verifications', authMiddleware, async (req, res) => {
+  try {
+    const adminUser = await User.findById(req.userId);
+
+    if (!adminUser || adminUser.role !== 'admin') {
+      return res.status(403).json({ message: 'Access denied. Admin only.' });
+    }
+
+    const pendingUsers = await User.find({
+      verificationStatus: 'PENDING'
+    }).select('name email phone city citizenshipPhoto verificationStatus createdAt');
+
+    res.json({
+      users: pendingUsers
+    });
+  } catch (error) {
+    console.error('Get pending verifications error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// @route   POST /api/auth/verify-user/:userId
+// @desc    Approve or reject user verification (Admin only)
+// @access  Private (Admin)
+router.post('/verify-user/:userId', authMiddleware, async (req, res) => {
+  try {
+    const { action } = req.body; // action: 'APPROVE' or 'REJECT'
+
+    const adminUser = await User.findById(req.userId);
+
+    if (!adminUser || adminUser.role !== 'admin') {
+      return res.status(403).json({ message: 'Access denied. Admin only.' });
+    }
+
+    const targetUser = await User.findById(req.params.userId);
+
+    if (!targetUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (action === 'APPROVE') {
+      targetUser.isVerified = true;
+      targetUser.verificationStatus = 'APPROVED';
+    } else if (action === 'REJECT') {
+      targetUser.isVerified = false;
+      targetUser.verificationStatus = 'REJECTED';
+    } else {
+      return res.status(400).json({ message: 'Invalid action. Use APPROVE or REJECT' });
+    }
+
+    await targetUser.save();
+
+    res.json({
+      message: `User verification ${action.toLowerCase()}d successfully`,
+      user: {
+        id: targetUser._id,
+        name: targetUser.name,
+        isVerified: targetUser.isVerified,
+        verificationStatus: targetUser.verificationStatus
+      }
+    });
+  } catch (error) {
+    console.error('Verify user error:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });

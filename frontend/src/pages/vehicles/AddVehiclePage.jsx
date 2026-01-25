@@ -1,9 +1,9 @@
-
 import React, { useState } from "react";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/common/Navbar";
+import { Shield, AlertCircle } from "lucide-react";
 
 // 🔹 Cloudinary Configuration (from environment variables)
 const CLOUD_NAME = process.env.REACT_APP_CLOUDINARY_CLOUD_NAME;
@@ -103,7 +103,7 @@ export default function AddVehiclePage() {
         ...vehicleData,
         year: parseInt(vehicleData.year),
         seats: parseInt(vehicleData.seats),
-        pricePerDay: parseFloat(vehicleData.pricePerDay),
+        pricePerDay: parseInt(vehicleData.pricePerDay),
         image: imageUrl
       }, {
         headers: {
@@ -114,21 +114,8 @@ export default function AddVehiclePage() {
       alert("Vehicle added successfully!");
       console.log(res.data);
 
-      // Reset form
-      setVehicleData({
-        name: "",
-        make: "",
-        model: "",
-        year: "",
-        seats: "",
-        location: "",
-        type: "",
-        fuelType: "",
-        plateNumber: "",
-        pricePerDay: ""
-      });
-      setImageFile(null);
-      setImagePreview(null);
+      // Redirect to vehicles page
+      navigate('/vehicles');
     } catch (err) {
       console.log(err);
       alert(err.response?.data?.message || "Failed to add vehicle");
@@ -158,6 +145,54 @@ export default function AddVehiclePage() {
 
           {/* Form Card */}
           <div className="bg-white rounded-2xl shadow-xl p-8">
+          
+          {/* Verification Warning */}
+          {!user?.isVerified && (
+            <div className="mb-6 bg-yellow-50 border-2 border-yellow-400 rounded-xl p-6">
+              <div className="flex items-start gap-4">
+                <div className="p-3 bg-yellow-100 rounded-lg">
+                  <Shield className="w-6 h-6 text-yellow-600" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-yellow-900 mb-2">Verification Required</h3>
+                  <p className="text-yellow-800 mb-4">
+                    You need to verify your account with a citizenship document before listing vehicles as a host.
+                  </p>
+                  {user?.verificationStatus === 'NOT_SUBMITTED' && (
+                    <p className="text-sm text-yellow-700 mb-4">
+                      <strong>Status:</strong> Not submitted. Please upload your citizenship document.
+                    </p>
+                  )}
+                  {user?.verificationStatus === 'PENDING' && (
+                    <p className="text-sm text-yellow-700 mb-4">
+                      <strong>Status:</strong> Under review. Your document is being verified by our admin team.
+                    </p>
+                  )}
+                  {user?.verificationStatus === 'REJECTED' && (
+                    <div className="mb-4">
+                      <p className="text-sm text-red-700 font-semibold">
+                        <strong>Status:</strong> Rejected
+                      </p>
+                      {user?.rejectionReason && (
+                        <p className="text-sm text-red-600 mt-1">
+                          <strong>Reason:</strong> {user.rejectionReason}
+                        </p>
+                      )}
+                      <p className="text-sm text-yellow-700 mt-1">Please upload a clear document again.</p>
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => navigate('/dashboard?tab=profile')}
+                    className="px-6 py-3 bg-yellow-600 text-white font-semibold rounded-lg hover:bg-yellow-700 transition-colors"
+                  >
+                    Go to Profile & Upload Document
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+          
           <form onSubmit={handleSubmit} className="space-y-6">
             
             {/* Vehicle Name */}
@@ -322,7 +357,6 @@ export default function AddVehiclePage() {
               </select>
             </div>
 
-            {/* Price Per Day */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Price Per Day (₹) <span className="text-red-500">*</span>
@@ -332,7 +366,7 @@ export default function AddVehiclePage() {
                 name="pricePerDay"
                 placeholder="e.g., 1500"
                 min="0"
-                step="0.5"
+                step="1"
                 value={vehicleData.pricePerDay}
                 onChange={handleChange}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
@@ -391,10 +425,15 @@ export default function AddVehiclePage() {
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={uploading}
-              className={`w-full py-4 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold rounded-lg shadow-lg hover:from-blue-600 hover:to-indigo-700 transform hover:scale-[1.02] transition-all duration-200 ${uploading ? 'opacity-70 cursor-not-allowed' : ''}`}
+              disabled={uploading || !user?.isVerified}
+              className={`w-full py-4 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold rounded-lg shadow-lg hover:from-blue-600 hover:to-indigo-700 transform hover:scale-[1.02] transition-all duration-200 ${(uploading || !user?.isVerified) ? 'opacity-70 cursor-not-allowed' : ''}`}
             >
-              {uploading ? (
+              {!user?.isVerified ? (
+                <span className="flex items-center justify-center gap-2">
+                  <Shield className="w-5 h-5" />
+                  Verification Required
+                </span>
+              ) : uploading ? (
                 <span className="flex items-center justify-center gap-2">
                   <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -406,6 +445,12 @@ export default function AddVehiclePage() {
                 'Add Vehicle'
               )}
             </button>
+            
+            {!user?.isVerified && (
+              <p className="text-sm text-center text-yellow-600 font-medium">
+                Complete verification to list your vehicle
+              </p>
+            )}
           </form>
           </div>
         </div>

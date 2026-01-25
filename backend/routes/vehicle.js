@@ -3,9 +3,10 @@ const router = express.Router();
 const Vehicle = require("../models/Vehicle");
 const User = require("../models/User");
 const authMiddleware = require("../middleware/auth");
+const verifyUser = require("../middleware/verifyUser");
 
-// Add vehicle (PROTECTED)
-router.post("/add", authMiddleware, async (req, res) => {
+// Add vehicle (PROTECTED) - requires verification
+router.post("/add", authMiddleware, verifyUser, async (req, res) => {
   try {
     const userId = req.userId; // Comes from token (middleware)
         const { name, make, model, year, seats, location, fuelType, image, pricePerDay, type, plateNumber } = req.body;
