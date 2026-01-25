@@ -24,7 +24,7 @@ exports.processDemoPayment = async (req, res) => {
     const userId = req.userId;
     const { bookingId, paymentMethod, amount } = req.body;
 
-    console.log("💳 Processing demo payment:", { bookingId, paymentMethod, amount });
+    console.log("Processing demo payment:", { bookingId, paymentMethod, amount });
 
     // Validate input
     if (!bookingId || !paymentMethod) {

@@ -7,7 +7,7 @@ const authMiddleware = require("../middleware/auth");
 // Add vehicle (PROTECTED)
 router.post("/add", authMiddleware, async (req, res) => {
   try {
-    const userId = req.userId; // 🔥 Comes from token (middleware)
+    const userId = req.userId; // Comes from token (middleware)
         const { name, make, model, year, seats, location, fuelType, image, pricePerDay, type, plateNumber } = req.body;
 
         // Validation
@@ -46,7 +46,7 @@ router.post("/add", authMiddleware, async (req, res) => {
   }
 });
 
-// 🌍 GET ALL vehicles (PUBLIC) - Only active vehicles
+// GET ALL vehicles (PUBLIC) - Only active vehicles
 router.get("/", async (req, res) => {
   try {
     const vehicles = await Vehicle.find({ status: "active" }).populate("owner", "name email");
@@ -57,7 +57,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-// 🔐 GET current user's vehicles (PROTECTED) - All statuses
+// GET current user's vehicles (PROTECTED) - All statuses
 router.get("/my-vehicles", authMiddleware, async (req, res) => {
   try {
     const userId = req.userId;
@@ -69,7 +69,7 @@ router.get("/my-vehicles", authMiddleware, async (req, res) => {
   }
 });
 
-// 🔐 UPDATE vehicle status (PROTECTED)
+// UPDATE vehicle status (PROTECTED)
 router.patch("/:vehicleId/status", authMiddleware, async (req, res) => {
   try {
     const { vehicleId } = req.params;
@@ -125,19 +125,5 @@ router.delete("/:vehicleId", authMiddleware, async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
-
-// GET all vehicles for a specific user by MongoDB _id
-/*router.get("/user/:userId", async (req, res) => {
-  try {
-    const { userId } = req.params;
-
-    const vehicles = await Vehicle.find({ owner: userId });
-
-    res.json({ success: true, vehicles });
-  } catch (error) {
-    console.error("Get vehicles error:", error);
-    res.status(500).json({ success: false, message: "Server error" });
-  }
-});*/
 
 module.exports = router;

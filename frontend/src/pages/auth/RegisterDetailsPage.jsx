@@ -49,7 +49,7 @@ export default function RegisterDetailsPage() {
         headers: { Authorization: `Bearer ${token}` }
       });
       
-      console.log('✅ Profile completed:', response.data);
+      console.log(' Profile completed:', response.data);
       
       // Update user in context
       updateUser(response.data.user);

@@ -26,7 +26,7 @@ export const cleanupLocalStorage = () => {
     localStorage.clear();
     if (token) {
       localStorage.setItem('token', token);
-      console.log('✅ localStorage cleaned - token preserved');
+      console.log('localStorage cleaned - token preserved');
     }
     
     return true;
