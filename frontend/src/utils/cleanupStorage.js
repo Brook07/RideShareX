@@ -18,7 +18,7 @@ export const cleanupLocalStorage = () => {
     itemsToRemove.forEach(item => {
       if (localStorage.getItem(item)) {
         localStorage.removeItem(item);
-        console.log(`🗑️ Cleaned up: ${item}`);
+        console.log(`Cleaned up: ${item}`);
       }
     });
     
