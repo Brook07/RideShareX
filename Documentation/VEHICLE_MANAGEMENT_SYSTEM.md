@@ -551,4 +551,6 @@ if (vehicle.owner.toString() !== userId) {
 - **Active:** Visible in public marketplace
 - **Inactive:** Hidden from public, only visible to owner
 
+
 This system ensures proper authorization, data security, and clear separation between public and private vehicle management.
+
