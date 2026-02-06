@@ -1,0 +1,394 @@
+@startuml RideShareX Complete System Flow
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam activityBackgroundColor #E8F5FF
+skinparam activityBorderColor #2196F3
+skinparam activityStartColor #4CAF50
+skinparam activityEndColor #F44336
+skinparam activityFontSize 12
+skinparam defaultTextAlignment center
+skinparam arrowColor #1976D2
+skinparam noteBorderColor #FF9800
+skinparam noteFontColor #000000
+
+title RideShareX - Complete System Flow
+
+start
+
+:User Opens Application;
+note right
+  Landing Page
+  Browse Vehicles
+end note
+
+if (User Authenticated?) then (No)
+  :Click Login;
+  :Redirect to Google OAuth;
+  
+  :User Enters Google Credentials;
+  
+  :Google Returns JWT Token;
+  
+  :Frontend Decodes Token;
+  note right
+    Extracts:
+    - googleId
+    - email
+    - name
+    - picture
+  end note
+  
+  :Send User Data to Backend\n(POST /api/auth/google);
+  
+  if (User Exists in DB?) then (No)
+    :Create New User Account;
+    :Set isNewUser = true;
+    :Generate JWT Token (7 days);
+    
+    :Redirect to Register Details Page;
+    
+    :User Fills Profile Form;
+    note right
+      - Full Name
+      - Phone Number
+      - Address/Location
+      - Profile Photo
+    end note
+    
+    :Submit Profile\n(PUT /api/auth/profile);
+    
+    :Update User Profile in DB;
+    
+  else (Yes)
+    :Generate JWT Token (7 days);
+  endif
+  
+  :Store Token & User in localStorage;
+  :Update AuthContext State;
+  
+else (Yes)
+  :Access Dashboard;
+endif
+
+:Navigate to Dashboard;
+
+partition "User Decision Point" {
+  if (What does user want to do?) then (Browse/Book Vehicles)
+    
+    :Navigate to Vehicles Page;
+    
+    :View All Active Vehicles;
+    note right
+      Filters Applied:
+      - Status = 'active'
+      - Not own vehicles
+      - Available for dates
+    end note
+    
+    :Apply Search/Filters?;
+    note right
+      - Location
+      - Fuel Type
+      - Price Range
+      - Vehicle Type
+      - Seats
+    end note
+    
+    :Select Vehicle;
+    
+    :Click "Book Now";
+    
+    :Navigate to Booking Page\n(BookNowPage);
+    
+    :View Vehicle Details;
+    note right
+      - Photos
+      - Specifications
+      - Owner Info
+      - Pricing
+      - Reviews
+    end note
+    
+    :Select Pickup Date;
+    :Select Dropoff Date;
+    
+    :System Calculates Total;
+    note right
+      Total Days = (Dropoff - Pickup)
+      Total Price = Days × Price Per Day
+    end note
+    
+    if (Check Vehicle Availability?) then (Available)
+      
+      :Click "Confirm Booking";
+      
+      :Create Booking Request\n(POST /api/booking/);
+      
+      partition "Booking Validation" {
+        :Verify Vehicle Status = 'active';
+        :Check No Overlapping Bookings;
+        :Verify User != Vehicle Owner;
+        :Set Status = 'PENDING';
+        :Set expiresAt = now + 5 minutes;
+      }
+      
+      :Save Booking to DB;
+      
+      :Display Success Message;
+      note right
+        "Booking request sent!
+        Waiting for owner approval"
+      end note
+      
+      :Owner Receives Notification;
+      
+      partition "Owner's Rental Requests Page" {
+        :Owner Views Pending Requests;
+        
+        if (Owner Decision?) then (Accept)
+          
+          :Click "Accept Booking";
+          
+          :Process Payment\n(POST /api/booking/:id/accept);
+          
+          partition "Payment Processing" {
+            :Check Renter Wallet Balance;
+            
+            if (Sufficient Balance?) then (Yes)
+              :Deduct from Renter Wallet;
+              :Add to Owner Wallet;
+              :Create Payment Record;
+              :Update Booking Status = 'CONFIRMED';
+              :Mark Vehicle as Booked;
+              
+              :Save Transaction History;
+              note right
+                Payment Snapshot:
+                - Amount
+                - Status = 'COMPLETED'
+                - Transaction ID
+                - Booking Details
+              end note
+              
+              :Send Confirmation to Renter;
+              
+            else (No)
+              :Return Error;
+              :Status remains PENDING;
+              stop
+            endif
+          }
+          
+        else (Reject)
+          :Click "Reject Booking";
+          
+          :Update Status = 'REJECTED';
+          note right
+            Reason: Owner declined
+          end note
+          
+          :Send Rejection Notice;
+          
+        endif
+      }
+      
+      if (Booking Status?) then (CONFIRMED)
+        :Booking Active;
+        :Both Parties Can View Details;
+        
+        :Navigate to My Bookings;
+        note right
+          View:
+          - Confirmed
+          - Pending
+          - Rejected
+          - Completed
+        end note
+        
+        :Transaction Recorded;
+        :Navigate to Transaction History;
+        
+      else (REJECTED/EXPIRED)
+        :Booking Cancelled;
+        :User Can Rebook;
+      endif
+      
+    else (Not Available)
+      :Show "Vehicle not available";
+      :Return to Vehicles Page;
+    endif
+    
+  else (Become a Host)
+    
+    :Click "Become a Host";
+    
+    :Navigate to BecomeHostPage;
+    
+    if (User Already Host?) then (Yes)
+      :Redirect to Add Vehicle Page;
+      
+    else (No)
+      :Fill Host Application Form;
+      note right
+        Required Documents:
+        - Citizenship/ID Card
+        - License (optional)
+        - Phone verification
+      end note
+      
+      :Upload Citizenship Photo;
+      
+      :Submit Application\n(PUT /api/auth/profile);
+      
+      :Update User Document:
+      - isHost = false
+      - isVerified = false
+      - citizenshipPhoto uploaded;
+      
+      :Show "Pending Admin Approval";
+      
+      partition "Admin Verification" {
+        :Admin Opens Verification Page;
+        
+        :View Pending Host Requests;
+        
+        :Review User Documents;
+        
+        if (Admin Decision?) then (Approve)
+          :Click "Verify";
+          
+          :Update User:\n- isVerified = true\n- isHost = true;
+          note right
+            POST /api/auth/verify-user/:id
+          end note
+          
+          :Send Approval Email/Notification;
+          
+          :User Can Now Add Vehicles;
+          
+        else (Reject)
+          :User remains unverified;
+          :Send Rejection Notice;
+        endif
+      }
+      
+      :Poll/Check Verification Status;
+      
+      if (Verified?) then (Yes)
+        :Access Host Features;
+        
+        partition "Add Vehicle" {
+          :Navigate to Add Vehicle Page;
+          
+          :Fill Vehicle Form;
+          note right
+            Required Fields:
+            - Name
+            - Make & Model
+            - Year
+            - Seats
+            - Location
+            - Fuel Type
+            - Type (car/bike/scooter)
+            - Price Per Day
+            - Photos
+          end note
+          
+          :Upload Vehicle Photos;
+          note right
+            Via Multer
+            Stored in Cloudinary
+          end note
+          
+          :Submit Vehicle\n(POST /api/vehicles/add);
+          
+          partition "Vehicle Creation" {
+            :Verify User isVerified = true;
+            :Upload Photos to Cloudinary;
+            :Extract Owner Location from User;
+            :Set Status = 'active';
+            :Set owner = user._id;
+            :Save Vehicle to DB;
+          }
+          
+          :Vehicle Added Successfully;
+          
+          :Navigate to Manage Vehicles;
+        }
+        
+        partition "Manage Vehicles" {
+          :View My Listed Vehicles;
+          note right
+            GET /api/vehicles/owner/:ownerId
+          end note
+          
+          if (Action?) then (Edit Vehicle)
+            :Update Vehicle Details\n(PUT /api/vehicles/:id);
+            
+          else (Delete Vehicle)
+            :Remove Vehicle\n(DELETE /api/vehicles/:id);
+            note right
+              Only if no active bookings
+            end note
+            
+          else (Toggle Status)
+            :Change active/inactive;
+          endif
+        }
+        
+        :View Rental Requests;
+        :Accept/Reject Bookings;
+        :Receive Payments in Wallet;
+        
+      else (No)
+        :Wait for Admin Approval;
+        stop
+      endif
+    endif
+    
+  else (View Transactions)
+    :Navigate to Transaction History;
+    
+    :Fetch User Transactions\n(GET /api/payment/history);
+    
+    :Display All Payments;
+    note right
+      Shows:
+      - Amount
+      - Date
+      - Status
+      - Booking Details
+      - Vehicle Info
+    end note
+    
+  else (View My Bookings)
+    :Navigate to My Bookings Page;
+    
+    :Fetch User Bookings\n(GET /api/booking/user/:userId);
+    
+    :Display Bookings by Status;
+    note right
+      Categories:
+      - Confirmed
+      - Pending
+      - Rejected
+      - Completed
+    end note
+    
+  endif
+}
+
+:Continue Using Application;
+
+if (Logout?) then (Yes)
+  :Clear localStorage;
+  :Reset AuthContext;
+  :Redirect to Landing Page;
+  stop
+else (No)
+  :Remain Logged In;
+endif
+
+stop
+
+@enduml
