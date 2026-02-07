@@ -2,7 +2,8 @@
 
 % Required packages
 \usepackage[utf8]{inputenc}
-\usepackage[margin=1in]{geometry}
+\usepackage[left=1.5in, right=1.23in, top=1.23in, bottom=1.23in]{geometry}
+\usepackage{mathptmx}
 \usepackage{graphicx}
 \usepackage{setspace}
 \usepackage{titlesec}
@@ -10,6 +11,27 @@
 \usepackage{fancyhdr}
 \usepackage{hyperref}
 \usepackage{caption}
+\usepackage[super,numbers,sort&compress]{natbib}
+\usepackage{url}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{pdflscape}
+\usepackage{enumitem} % For better list formatting
+\usepackage{sectsty} % For section font formatting
+
+% Font size for Section, Subsection, Subsubsection, Chapter (following template standards)
+\sectionfont{\fontsize{14}{20}\selectfont}
+\subsectionfont{\fontsize{13}{18}\selectfont}
+\subsubsectionfont{\fontsize{12}{17}\selectfont}
+\chapterfont{\fontsize{16}{24}\selectfont}
+
+% Chapter formatting - chapter number and title on same line
+\titleformat{\chapter}[hang]
+  {\fontseries{b}\fontsize{16}{24}\selectfont}{\chaptertitlename\ \thechapter}{1em}{}
+\titlespacing*{\chapter}{0pt}{0pt}{20pt}  % {left}{before}{after}
+
+
+
 
 % For abbreviations/Acronyms
 \usepackage[acronym]{glossaries}
@@ -24,10 +46,20 @@
     citecolor=blue,
 }
 
+% Rename TOC title and move TOC/LOF/LOT titles upward to match chapter spacing
+\renewcommand{\contentsname}{Table of Contents}
+\setlength{\cftbeforetoctitleskip}{0pt}
+\setlength{\cftbeforeloftitleskip}{0pt}
+\setlength{\cftbeforelottitleskip}{0pt}
+
+% Set font size for TOC, LOF, LOT titles to 16pt/24pt bold
+\renewcommand{\cfttoctitlefont}{\fontseries{b}\fontsize{16}{24}\selectfont}
+\renewcommand{\cftloftitlefont}{\fontseries{b}\fontsize{16}{24}\selectfont}
+\renewcommand{\cftlottitlefont}{\fontseries{b}\fontsize{16}{24}\selectfont}
+
 % Custom commands for project report
 \newcommand{\projecttitle}{RideShareX: A Peer-to-Peer Vehicle Rental Platform}
-\newcommand{\projectdate}{January 26, 2026}
-\newcommand{\coursecode}[1]{\newcommand{\thecoursecode}{#1}}
+\newcommand{\coursecode}[1]{\newcommand{\thecoursecode}{COMP 311}}
 \newcommand{\y}[1]{\newcommand{\theyear}{#1}}
 \newcommand{\sem}[1]{\newcommand{\thesem}{#1}}
 \newcommand{\group}[1]{\newcommand{\thegroup}{#1}}
@@ -37,67 +69,65 @@
 \setcounter{membercount}{0}
 \newcommand{\member}[2]{%
     \stepcounter{membercount}%
-    \expandafter\newcommand\csname membername\themembercount\endcsname{#1}%
+    \expandafter\newcommand\csname membername\themembercount\endcsname{}%
     \expandafter\newcommand\csname memberroll\themembercount\endcsname{#2}%
 }
 
 % Supervisor
 \newcommand{\supervisor}[3]{%
-    \newcommand{\supervisorname}{#1}%
-    \newcommand{\supervisortitle}{#2}%
-    \newcommand{\supervisordept}{#3}%
+    \newcommand{\supervisorname}{#1 Bipesh Subedi}%
 }
 
 % Coordinator
 \newcommand{\coordinator}[1]{\newcommand{\thecoordinator}{#1}}
 
 % Custom title page
-\newcommand{\maketitle}{%
+\renewcommand{\maketitle}{%
     \begin{titlepage}
         \centering
-        \vspace*{1.5cm}
+        \vspace*{0.8cm}   % moved content upward
         
         {\Large \textbf{KATHMANDU UNIVERSITY}\par}
-        \vspace{0.3cm}
+        \vspace{0.25cm}
         {\large SCHOOL OF SCIENCE\par}
-        \vspace{0.2cm}
+        \vspace{0.15cm}
         {\large DEPARTMENT OF COMPUTER SCIENCE AND ENGINEERING\par}
-        \vspace{1.5cm}
+        \vspace{1.3cm}
         
         {\Large \textbf{PROJECT PROPOSAL ON RideShareX}\par}
-        \vspace{2cm}
+        \vspace{1.8cm}
         
-        % University logo placeholder (add your logo file)
-        % \includegraphics[width=4cm]{ku_logo.png}
-        \vspace{2cm}
+        % Bigger logo
+        \includegraphics[width=3cm]{ku_logo.png}
+        \vspace{1.8cm}
         
         {\large \textbf{[Code No: \thecoursecode]}\par}
         \vspace{0.3cm}
-        {\large For partial fulfillment of Year \theyear/Semester \thesem\ in Computer Science\par}
+        {\large For partial fulfillment of Year \theyear / Semester I in Computer Science\par}
         \vspace{1.5cm}
         
         {\large \textbf{Submitted By:}\par}
         \vspace{0.3cm}
-        \ifnum\themembercount>0 {\large \membernameone\ (Roll No.\memberrollone)\par}\fi
-        \ifnum\themembercount>1 {\large \membernametwo\ (Roll No.\memberrolltwo)\par}\fi
-        \ifnum\themembercount>2 {\large \membernamethree\ (Roll No.\memberrollthree)\par}\fi
+        \ifnum\themembercount>0 {\large Utsav Adhikari (Roll No. 03)\par}\fi
+        \ifnum\themembercount>1 {\large Lujaw Dhunju (Roll No. 19)\par}\fi
+        \ifnum\themembercount>2 {\large Jatin Madikarmi (Roll No. 32)\par}\fi
         \vspace{1.5cm}
         
         {\large \textbf{Submitted To:}\par}
         \vspace{0.3cm}
-        {\large \supervisorname\par}
-        {\large \supervisordept\par}
+        {\large Mr. Suman Shrestha\par}
+        \vspace{0.2cm}
+        {\large Department of Computer Science and Enginnering\par}
         
         \vfill
-        
-        {\large \projectdate\par}
+        {\large Feburary 9, 2026\par}
     \end{titlepage}
 }
 
 % Bonafide certificate
 \newenvironment{bonafidecertificate}{%
     \newpage
-    \thispagestyle{empty}
+    \addcontentsline{toc}{chapter}{Bonafide Certificate}
     \begin{center}
         {\Large \textbf{BONAFIDE CERTIFICATE}\par}
     \end{center}
@@ -106,31 +136,42 @@
 
 \newcommand{\makebonafidecertificate}{%
     \begin{bonafidecertificate}
-        This is to certify that the project entitled \textbf{``\projecttitle''} submitted by
         
+        This is to certify that the project titled \textbf{``\projecttitle''} is the original and authentic
+work of:
+
         \vspace{0.5cm}
-        \ifnum\themembercount>0 \membernameone\ (\memberrollone)\par\fi
-        \ifnum\themembercount>1 \membernametwo\ (\memberrolltwo)\par\fi
-        \ifnum\themembercount>2 \membernamethree\ (\memberrollthree)\par\fi
+        \centering
+        "Utsav Adhikari"\par
+        "Lujaw Dhunju"\par
+        "Jatin Madikarmi"\par
         \vspace{0.5cm}
+        \end{center}
         
-        in partial fulfillment of the requirements for the award of the degree of \textbf{Bachelor of Engineering} in \textbf{\thegroup} to the Department of Computer Engineering is a bonafide record of work carried out by them under my supervision and guidance.
+They have successfully carried out this project in partial fulfillment of the requirements
+for the award of the degree of \textbf{Bachelor of Science in Computer Science} under my
+supervision and guidance, and the work is a bonafide record of their original efforts.
+
         
-        \vspace{2cm}
-        
-        \begin{flushright}
-            \begin{tabular}{c}
-                \\[2cm]
-                \hline
-                \supervisorname\\
-                \supervisortitle\\
-                \supervisordept\\
-            \end{tabular}
-        \end{flushright}
-        
-        \vspace{1cm}
-        
-        \textbf{Date:} \projectdate
+   \vspace{2cm}
+
+\begin{flushleft}
+\begin{tabular}{p{5cm}}
+\toprule
+\\[-0.6em]
+\end{tabular}
+\end{flushleft}
+\begin{flushleft}
+\begin{tabular}{p{6cm}}
+
+Mr. Bipesh Subedi\\
+Lecturer\\
+Department of Computer Science and Engineering (DoCSE)\\[0.5cm]
+\vspace{0.1cm}
+February 9, 2026
+\end{tabular}
+\end{flushleft}
+        \vspace{4cm}
     \end{bonafidecertificate}
 }
 
@@ -154,7 +195,7 @@
 \coursecode{COMP307}
 \y{III}
 \sem{II}
-\group{Computer Engineering}
+\group{Computer Science}
 
 \member{Name 1}{Roll}
 \member{Name 2}{Roll}
@@ -164,64 +205,114 @@
 
 \coordinator{Coordinator Name}
 
+% Acknowledgment Environment
+\renewenvironment{acknowledgements}
+{
+    \clearpage
+    {\fontseries{b}\fontsize{16}{24}\selectfont Acknowledgements\par}
+    \vspace{20pt}
+    \addcontentsline{toc}{chapter}{Acknowledgements}
+    \noindent
+}{}
+
+% Environment for Abstract
+\renewenvironment{abstract}
+{
+    \clearpage
+    {\fontseries{b}\fontsize{16}{24}\selectfont Abstract\par}
+    \vspace{20pt}
+    \addcontentsline{toc}{chapter}{Abstract}
+    \noindent
+}
+{
+    \par
+}
+
+% For tables
+\usepackage{tabularx} 
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X} % left-aligned wrapped text
+
+
+
 \begin{document}
+    % Title page is roman page i but not displayed
+    \pagenumbering{roman}
 	\maketitle
-	
+
 	\makebonafidecertificate
 	
-	\begin{acknowledgements}
-		We would like to express our sincere gratitude to everyone who contributed to the successful completion of this project. First and foremost, we extend our heartfelt thanks to our project supervisor for their invaluable guidance, continuous support, and constructive feedback throughout the development of RideShareX.
+\begin{acknowledgements}	
+    We would like to express our sincere gratitude to the Department of Computer Science and
+    Engineering (DoCSE) at Kathmandu University for providing us with the opportunity to develop
+    our project, \textbf{Ride ShareX}. This project has enabled us to enhance our technical skills
+    and gain valuable experience in the design and development of a ride-sharing application.
 		
-		We are grateful to our institution and the Department of Computer Engineering for providing us with the necessary resources, infrastructure, and technical support that enabled us to work on this project effectively. We also appreciate the cooperative learning environment fostered by our peers and faculty members.
+	Our heartfelt appreciation goes to our project supervisor, Mr. Bipesh Subedi, for his invaluable guidance, constructive feedback, and continuous support throughout the project.
 		
-		Special thanks to the open-source community and the developers of the MERN stack technologies (MongoDB, Express.js, React, and Node.js) whose well-documented frameworks and libraries made the implementation of our platform possible. We would also like to acknowledge Google for providing OAuth 2.0 authentication services that enhanced the security and user experience of our application.
-		
-		Finally, we are thankful to our families and friends for their unwavering encouragement and support during the challenging phases of this project. Their patience and understanding have been instrumental in helping us achieve our goals.		
-	\end{acknowledgements}
+				
+\end{acknowledgements}
 	
-	
-	
-	
-	\begin{abstract}
-		The rapid urbanization and increasing mobility demands have led to growing interest in shared economy solutions, particularly in the vehicle rental sector. Traditional vehicle rental services often involve intermediaries, high costs, and limited accessibility, creating barriers for both vehicle owners and renters. RideShareX addresses these challenges by providing a peer-to-peer vehicle rental platform that connects vehicle owners directly with potential renters, eliminating the need for traditional rental agencies.
-		
-		This project develops a full-stack web application using the MERN stack (MongoDB, Express.js, React, and Node.js) that enables users to list their vehicles for rent and book available vehicles within their community. The platform implements secure authentication through Google OAuth 2.0 and JWT-based session management, ensuring user data protection and privacy. Key features include real-time booking management, comprehensive vehicle listings with photo uploads, automated payment processing with demo payment integration, and an intuitive user interface built with React and Tailwind CSS.
-		
-		The system architecture follows a client-server model with RESTful API design principles. MongoDB serves as the database for storing user profiles, vehicle information, bookings, and payment records. The application implements role-based access control, distinguishing between vehicle owners and renters. Vehicle owners can list multiple vehicles, manage rental requests, and track earnings, while renters can search for available vehicles, make bookings, and process payments seamlessly.
-		
-		Testing and validation demonstrate that RideShareX successfully facilitates peer-to-peer vehicle transactions with a 90\% payment success rate in the demo environment. The platform's responsive design ensures compatibility across desktop and mobile devices. By promoting the shared economy model, RideShareX provides vehicle owners with passive income opportunities while offering renters flexible and budget-friendly transportation options.
-		
-		The project concludes that peer-to-peer vehicle rental platforms can effectively bridge the gap between vehicle ownership and accessibility, creating a community-powered mobility ecosystem. Future enhancements will include real-money payment gateway integration, vehicle rating and review systems, GPS-based vehicle tracking, and mobile application development for enhanced user engagement and platform scalability.
-	\end{abstract}
+\begin{abstract}
+RideShareX is a peer-to-peer vehicle rental web application designed to connect individuals who own vehicles with users seeking affordable and convenient transportation within their local community. The platform operates on a unified user model, allowing a single user account to both rent vehicles and list vehicles for rent after completing the required verification process. Users can search, view, book, and manage vehicles such as cars, bikes, and scooters through a centralized digital system. By enabling direct interaction between users, RideShareX promotes a shared mobility approach and reduces reliance on traditional rental services.
 
-	\begin{keywords}
-		Peer-to-peer renting, Vehicle sharing, MERN stack, Shared economy, Real-time booking, JWT authentication, Community mobility, Car rental platform
-	\end{keywords}
+The project addresses the issue of underutilized personal vehicles and the limitations of conventional rental agencies, including high rental costs, limited availability, and complex booking procedures. Many vehicle owners incur continuous maintenance expenses despite infrequent vehicle usage, while renters struggle to access nearby, flexible, and budget-friendly transportation options. RideShareX aims to bridge this gap by providing a community-driven solution that improves vehicle utilization, reduces rental costs, and ensures trust through user verification.
 
-	\pagenumbering{roman}
-	\setcounter{page}{1}
-		
-	\tableofcontents
-	\listoffigures
-	\listoftables
+The system is developed as a full-stack web application using the MERN stack (MongoDB, Express.js, React, and Node.js)\cite{mern}\cite{mongodb}\cite{node}\cite{express}\cite{react}. User authentication is implemented using Google OAuth\cite{oauth}, and identity verification is required to unlock booking and vehicle listing functionalities. The platform follows a client–server architecture with RESTful APIs and includes features such as vehicle management, booking workflows, simulated payment processing, and a responsive user interface to deliver a secure, efficient, and user-friendly experience.
+
+\vspace{1.5em}
+\noindent \textbf{Keywords:} Peer-to-peer vehicle rental, Unified user model, Shared economy, MERN stack, Vehicle sharing platform, Community mobility
+\end{abstract}
+
+    \newpage
+    \tableofcontents
+    \newpage
+    \addcontentsline{toc}{chapter}{List of Figures}
+    \listoffigures
+    \newpage
+    \addcontentsline{toc}{chapter}{List of Tables}
+    \listoftables
 	
-	\clearpage
-	\printglossary[title=Abbreviations,type=\acronymtype]
+	\newpage
+    {\fontseries{b}\fontsize{16}{24}\selectfont List of Abbreviations\par}
+    \vspace{20pt}
+    \addcontentsline{toc}{section}{List of Abbreviations}
+
+\begin{description}[leftmargin=2cm, style=nextline]
+    \item[API] Application Programming Interface
+    \item[CORS] Cross-Origin Resource Sharing
+    \item[CSS] Cascading Style Sheets
+    \item[ERD] Entity Relationship Diagram
+    \item[EV] Electric Vehicle
+    \item[GPS] Global Positioning System
+    \item[JWT] JSON Web Token
+    \item[MERN]  MongoDB Express.js React and Node.js
+    \item[NoSQL] Non-SQL
+    \item[OAuth] Open Authorization
+    \item[SSD] Solid State Drive
+    \item[UI] User Interfacea
+\end{description}
 	
 	
-	\chapter{Introduction}
-	\pagenumbering{arabic}
-	\setcounter{page}{1}
-	The transportation sector has witnessed a paradigm shift with the emergence of the shared economy, transforming how people access and utilize vehicles. RideShareX represents an innovative approach to vehicle rental services, leveraging modern web technologies to create a peer-to-peer platform that connects vehicle owners with individuals seeking temporary vehicle access. This chapter provides a comprehensive overview of the project, including the background context, objectives, motivation, and significance of developing such a platform.
+    \chapter{Introduction}
+    \pagenumbering{arabic}
+    \setcounter{page}{1}
+	In today’s fast-paced urban landscape era, personal mobility has become a vital part of everyday life. However, owning a vehicle is not always financially feasible, and traditional rental systems are often expensive, limited, or complicated. At the same time, many vehicle owners have cars and bikes that remain unused for long periods, resulting in wasted resources. There is a growing need for a community-driven, flexible, and transparent system that connects people who need vehicles with those who own them.
+
+    RideShareX aims to bridge this gap by creating a peer-to-peer vehicle renting platform that allows individuals to rent and lend vehicles within their community. Instead of relying on rental companies, the platform empowers everyday users to share their vehicles safely and profitably. By combining technology and convenience, RideShareX promotes the shared economy, reducing idle vehicle time, promoting cost efficiency, and supporting sustainable transportation.
+    Hence,it is an innovative approach to vehicle rental services, leveraging modern web technologies to create a peer-to-peer platform that connects vehicle owners with individuals seeking temporary vehicle access.
+
 	
 	\section{Background}
-	The concept of shared economy has gained substantial momentum in recent years, driven by technological advancements, environmental consciousness, and changing consumer preferences. Traditional vehicle rental services have dominated the market for decades, but they often involve substantial overhead costs, geographical limitations, and complex bureaucratic processes. These conventional models typically require customers to visit physical rental offices, complete extensive paperwork, and pay premium prices that include various intermediary costs.
-	
-	In recent years, peer-to-peer sharing platforms have emerged as viable alternatives across multiple industries, from accommodation (Airbnb) to transportation (Uber, Lyft). The vehicle rental sector has begun experiencing similar disruption with platforms like Turo and Getaround in international markets demonstrating the viability of peer-to-peer vehicle sharing. These platforms have shown that vehicle owners can monetize their idle assets while providing renters with more affordable and flexible options.
-	
-	However, existing peer-to-peer vehicle rental platforms face several challenges. Many international platforms are not accessible in local markets, lack localization features, have complex user interfaces, charge high commission fees, and may not address region-specific requirements such as local payment methods or cultural preferences. Additionally, security concerns, lack of trust between strangers, and inadequate insurance coverage have been identified as significant barriers to adoption.
-	
-	The rapid advancement of web technologies, particularly the MERN stack (MongoDB, Express.js, React, and Node.js), has made it feasible to develop sophisticated, scalable, and secure web applications with relatively lower development costs. Modern authentication mechanisms like OAuth 2.0 provide robust security, while responsive design frameworks ensure cross-device compatibility. These technological enablers create an opportune moment to develop localized peer-to-peer vehicle rental solutions that address community-specific needs while maintaining international quality standards.
+	Traditional vehicle rental services have dominated the market, which often involve lengthy procedures, substantial overhead costs, geographical limitations, and limited rental options. These conventional models typically require customers to visit physical rental offices, complete extensive paperwork, and pay premium prices that include various intermediary costs which becomes a major issue in regions where services are not easily accessible or affordable, users often struggle to find short-term or emergency transportation. Conversely, many private vehicle owners rarely use their cars or bikes daily yet continue to bear maintenance and depreciation costs.
+    
+    Recognizing this imbalance, we developed RideShareX, a digital peer-to-peer platform that enables people to rent and lend vehicles securely through direct user interaction. It serves as a local, tech-based solution to make vehicle access easier, faster, and more community-oriented and also enforcing the concept of shared economy.
+    In recent years, peer-to-peer sharing platforms have emerged as viable alternatives across multiple industries, from accommodation to transportation. The vehicle rental sector has begun experiencing similar disruption with platforms like Turo\cite{turo} and Getaround\cite{getaround} in international markets demonstrating the viability of peer-to-peer vehicle sharing\cite{sharedEconomy}. These platforms have shown that vehicle owners can monetize their idle assets while providing renters with more affordable and flexible options. 
+    
+    However, existing peer-to-peer vehicle rental platforms face several challenges as many international platforms are not accessible in local markets, lack localization features, have complex user interfaces, charge high commission fees, and may not address local payment methods. Additionally, security concerns, lack of trust between strangers, and inadequate insurance coverage have been identified as significant barriers to adoption.
+    
+    The rapid advancement of web technologies, particularly the MERN stack (MongoDB, Express.js, React, and Node.js)\cite{mern}, has made it feasible to develop sophisticated, scalable, and secure web applications with relatively lower development costs. Modern authentication mechanisms like OAuth 2.0\cite{oauth} provide robust security, while responsive design frameworks ensure cross-device compatibility. These technological enablers create an opportunity to develop localized peer-to-peer vehicle rental solutions that address community-specific needs while maintaining international quality standards. 
+
+
 	
 	\section{Objectives}
 	The primary objectives of the RideShareX project are:
@@ -229,373 +320,659 @@
 	\begin{itemize}
 		\item To develop a secure and user-friendly peer-to-peer vehicle rental platform that connects vehicle owners with potential renters, eliminating traditional rental agency intermediaries.
 		
-		\item To implement robust authentication and authorization mechanisms using Google OAuth 2.0 and JWT tokens, ensuring user data privacy and platform security.
+	\item To implement robust authentication and authorization mechanisms using Google OAuth 2.0\cite{oauth} and JWT\cite{jwt} tokens, ensuring user data privacy and platform security.
 		
-		\item To create a comprehensive booking management system that facilitates real-time vehicle reservations, payment processing, and transaction tracking for both vehicle owners and renters.
+	\item To create a comprehensive booking management system that facilitates real-time vehicle reservations, payment processing, and transaction tracking for both vehicle owners and renters.
 		
-		\item To design a scalable and maintainable full-stack web application using the MERN stack, following industry best practices and modern software engineering principles.
+	\item To design a scalable and maintainable full-stack web application using the MERN stack\cite{mern}, following industry best practices and modern software engineering principles.
 	\end{itemize}
 	
 	\section{Motivation and Significance}
-	The motivation for developing RideShareX stems from observing the growing gap between vehicle ownership costs and accessibility needs in urban communities. Many vehicle owners use their cars only a few hours per day, leaving valuable assets idle for extended periods. Simultaneously, numerous individuals need temporary vehicle access for specific purposes but cannot justify the expense of ownership or the high costs of traditional rental services.
-	
-	RideShareX addresses the drawbacks of existing systems by providing a localized, community-focused platform with transparent pricing, simplified booking processes, and lower commission rates compared to international competitors. Unlike traditional rental agencies that require physical presence and extensive documentation, RideShareX enables entirely digital transactions, reducing friction and improving user experience. The platform's integration of modern authentication methods eliminates the need for repetitive registration processes while maintaining security standards.
-	
-	The significance of this project extends beyond its technical implementation. By facilitating the shared economy model, RideShareX promotes sustainable resource utilization, reduces the environmental impact of vehicle manufacturing, and provides economic opportunities for vehicle owners. The platform democratizes vehicle access, making transportation more affordable for individuals who cannot afford vehicle ownership but need occasional access to personal transportation.
-	
-	Key features that distinguish RideShareX include seamless Google OAuth integration for one-click authentication, comprehensive vehicle management with photo uploads using Multer middleware, real-time booking status tracking with automated notifications, role-based access control distinguishing vehicle owners and renters, responsive UI design using React and Tailwind CSS ensuring mobile compatibility, RESTful API architecture enabling future mobile app development, and demo payment system simulating real-world transaction flows for project demonstration purposes. These features collectively create a robust, scalable, and user-centric platform that addresses the core needs of both vehicle owners and renters while maintaining technical excellence and security standards.
+	The motivation for developing RideShareX stems from observing the growing gap between vehicle ownership costs and accessibility needs in urban communities. Many vehicle owners use their cars only a few hours per day, leaving valuable assets idle for long periods. Simultaneously, numerous individuals need temporary vehicle access for specific purposes but cannot justify the expense of ownership or the high costs of traditional rental services. 
+
+    
+    RideShareX addresses the drawbacks of existing systems by providing a localized, community focused platform with transparent pricing, simplified booking processes, and lower commission rates compared to international competitors. Unlike traditional rental agencies that require physical presence and charge high commission, RideShareX enables entirely digital transactions, improving user experience.
+
+    
+    The significance of this project extends beyond its technical implementation. By facilitating the shared economy model, RideShareX promotes sustainable resource utilization, reduces the environmental impact of vehicle manufacturing, and provides economic opportunities for vehicle owners. The platform emphasizes vehicle access, making transportation more affordable for individuals who cannot afford vehicle ownership but need occasional access to personal transportation. 
+
+    
+    Key features that distinguish RideShareX include seamless Google OAuth\cite{oauth} integration for one-click authentication, comprehensive vehicle management with photo uploads using Cloudinary\cite{cloudinary}, real-time booking status tracking with automated notifications, a unified user model allowing the same account to function as both renter and vehicle owner based on verification status, responsive UI design using React\cite{react} and Tailwind CSS\cite{tailwind} ensuring mobile compatibility, RESTful API\cite{rest} architecture enabling future mobile app development, and demo payment system simulating real-world transaction flows for project demonstration purposes. 
+
+    
+    These features collectively create a robust, scalable, and user-centric platform that addresses the core needs of both vehicle owners and renters while maintaining technical excellence and security standards.
+
+    \section{Expected Outcomes}
+    The successful deployment of this platform will result in a robust, full-stack ecosystem that bridges the gap between vehicle owners and renters through a high-performance web interface. By leveraging the MERN stack's\cite{mern} real-time capabilities, the platform will achieve optimized resource utilization, transforming idle private vehicles into active community assets while lowering the barrier to transportation for non-owners. Users can expect a secure, low-friction experience facilitated by Google OAuth\cite{oauth} and JWT\cite{jwt}-based security, ensuring trust within the shared economy. Ultimately, the system will provide a scalable model for sustainable urban mobility, evidenced by its high booking,listing and managing vehicles efficiency, creating a seamless transition between owner and renter roles.
+
+    
+
 	
 	\chapter{Related Works}
 	
 	The peer-to-peer vehicle rental industry has witnessed significant development over the past decade, with several platforms pioneering the shared mobility concept. This chapter examines existing solutions, their approaches, strengths, and limitations, providing context for RideShareX's development.
 	
-	\section{Commercial Platforms}
+	\section{Turo}
 	
-	\textbf{Turo} is one of the largest peer-to-peer car sharing platforms, primarily operating in the United States and select international markets. Turo provides comprehensive insurance coverage, extensive vehicle listings, and a mature marketplace with established trust mechanisms. However, Turo charges commission fees ranging from 15-40\% depending on the insurance tier selected, which can significantly reduce owner earnings. Additionally, Turo's geographic limitations and lack of localization for emerging markets restrict its accessibility.
+	Turo\cite{turo} is a peer-to-peer car-sharing marketplace that functions as the "Airbnb for cars," connecting individual vehicle owners with travelers through a digital platform. Its primary strengths lie in its asset-light business model, which allows for rapid global scaling without the overhead of owning a fleet, and its diverse inventory that offers guests specific makes and models often unavailable at traditional agencies. Additionally, its decentralized nature enables convenient, "counter-free" experiences like airport delivery and remote unlocking. However, its weaknesses include a lack of operational consistency due to reliance on individual hosts, frequent "hidden" fees at checkout that can make it more expensive than traditional rentals, and the fact that most personal insurance or credit card policies do not cover peer-to-peer rentals, forcing users into Turo's proprietary protection plans.
 	
-	\textbf{Getaround} offers a similar peer-to-peer rental model with an emphasis on technology integration, including IoT-enabled devices for keyless vehicle access. While this enhances convenience, it requires hardware installation in vehicles, creating barriers to entry for potential hosts. Getaround also operates primarily in major metropolitan areas, limiting rural and suburban market penetration.
-	
-	\textbf{Zipcar}, though not strictly peer-to-peer, represents the car-sharing model with centrally owned vehicle fleets. Zipcar requires monthly membership fees and provides limited vehicle variety compared to peer-to-peer platforms. The centralized ownership model also results in higher rental costs and reduced flexibility for users.
-	
-	\section{Academic and Student Projects}
-	
-	Several academic projects have explored vehicle sharing concepts using web technologies. These projects typically implement basic CRUD operations for vehicle listings and user management but often lack comprehensive authentication mechanisms, payment integration, and production-ready deployment strategies. Most student projects focus on demonstrating technical concepts rather than addressing real-world challenges such as trust establishment, dispute resolution, and scalability.
-	
-	\section{Open Source Initiatives}
-	
-	Various open-source projects have attempted to create vehicle sharing platforms, providing valuable technical insights. However, these projects often remain incomplete, lack active maintenance, or do not address critical business logic requirements such as payment processing, booking conflicts, and user verification. The fragmented nature of open-source contributions makes it challenging to deploy these solutions in real-world scenarios.
-	
-	\section{Gap Analysis}
-	
-	Review of existing works reveals several gaps that RideShareX addresses. Most commercial platforms are not accessible in local markets or require complex onboarding processes. High commission fees reduce the economic viability for vehicle owners. Limited customization options prevent platforms from addressing region-specific requirements. Many academic projects lack production-ready features such as secure authentication, payment integration, and responsive design. There is insufficient focus on user experience and interface design in existing open-source solutions.
-	
-	RideShareX differentiates itself by providing a localized solution with lower technical barriers to entry, implementing modern authentication methods (Google OAuth 2.0) for enhanced security and user convenience, using the MERN stack for scalable and maintainable architecture, incorporating responsive design principles ensuring cross-device compatibility, demonstrating complete end-to-end workflows including payment processing simulation, and designing for future extensibility with mobile app development and additional feature integration.
-	
-	The analysis of related works confirms the viability of peer-to-peer vehicle rental models while highlighting opportunities for improvement. RideShareX builds upon the successes of established commercial platforms while addressing their limitations through modern technology choices, user-centric design, and focus on localization and accessibility.
-	
-	
-	\chapter{Design and Implementation}
-	This chapter details the systematic approach employed in developing RideShareX, encompassing system architecture, technology stack selection, implementation methodology, and detailed component specifications. The development process followed an iterative approach, beginning with requirements analysis, proceeding through design and implementation phases, and concluding with testing and deployment.
-	
-	\section{System Architecture}
-	
-	RideShareX employs a three-tier client-server architecture consisting of the presentation layer (React frontend), application layer (Express.js backend), and data layer (MongoDB database). This separation of concerns enhances maintainability, scalability, and enables independent development and deployment of system components.
-	
-	The frontend application, built with React, communicates with the backend through RESTful API endpoints using Axios HTTP client. All API requests include JWT authentication tokens in headers, ensuring secure communication. The backend validates these tokens using middleware functions before processing requests, implementing a stateless authentication mechanism.
-	
-	The system implements role-based access control (RBAC) distinguishing between regular users, vehicle owners, and administrators. Users can transition between roles, with vehicle owners having elevated permissions to list vehicles and manage rental requests. This flexible role system supports the dual nature of peer-to-peer platforms where users may act as both renters and hosts.
-	
-	\section{System Requirement Specifications}
-	
-	This section specifies the functional and non-functional requirements of RideShareX, along with software and hardware specifications necessary for development and deployment.
-	
-	\subsection{Functional Requirements}
-	
-	\begin{itemize}
-		\item \textbf{User Authentication:} Support Google OAuth 2.0 login, JWT token generation and validation, session management with 7-day expiry, and secure logout with token invalidation.
-		
-		\item \textbf{User Management:} New user profile completion, user dashboard with personal information, profile editing capabilities, and verification status tracking.
-		
-		\item \textbf{Vehicle Management:} Vehicle listing creation with multiple details, photo upload functionality (Multer integration), vehicle availability status management, and vehicle editing and deletion for owners.
-		
-		\item \textbf{Booking System:} Real-time vehicle search and filtering, booking request submission, owner approval/rejection workflow, booking status tracking (pending, confirmed, completed, cancelled), and booking history for both renters and owners.
-		
-		\item \textbf{Payment Processing:} Demo payment modal with multiple payment methods, transaction ID generation, payment status tracking, fare calculation with breakdown (base fare, distance fare, service fee), and transaction history viewing.
-		
-		\item \textbf{Admin Functions:} User verification management, platform oversight capabilities, and system monitoring.
-	\end{itemize}
-	
-	\subsection{Non-Functional Requirements}
-	
-	\begin{itemize}
-		\item \textbf{Security:} HTTPS communication in production, password hashing using bcrypt, JWT token-based authentication, protection against common vulnerabilities (XSS, CSRF, SQL injection), and secure file upload with type and size validation.
-		
-		\item \textbf{Performance:} Page load time under 3 seconds on standard broadband, API response time under 500ms for standard operations, support for concurrent users without degradation, and optimized database queries using indexes.
-		
-		\item \textbf{Usability:} Intuitive user interface with minimal learning curve, responsive design supporting desktop, tablet, and mobile devices, clear error messages and user feedback, and accessible design following WCAG guidelines.
-		
-		\item \textbf{Scalability:} Modular architecture enabling horizontal scaling, stateless backend supporting load balancing, database design accommodating growth, and RESTful API design facilitating future mobile app integration.
-		
-		\item \textbf{Maintainability:} Clean code following industry best practices, comprehensive code comments and documentation, separation of concerns with MVC architecture, and version control using Git.
-	\end{itemize}
-	
-	\subsection{Software Specifications}
-	The RideShareX platform utilizes modern software technologies and frameworks carefully selected to ensure robust functionality, security, and maintainability.
-	
-	\textbf{Frontend Technologies:}
-	\begin{itemize}
-		\item React 19.2.0 - Component-based UI library
-		\item React Router DOM 7.9.6 - Client-side routing
-		\item Axios 1.13.2 - HTTP client for API communication
-		\item Tailwind CSS 3.4.18 - Utility-first CSS framework
-		\item Lucide React 0.553.0 - Icon library
-		\item @react-oauth/google 0.12.2 - Google OAuth integration
-		\item jwt-decode 4.0.0 - JWT token decoding
-	\end{itemize}
-	
-	\textbf{Backend Technologies:}
-	\begin{itemize}
-		\item Node.js 14+ - JavaScript runtime environment
-		\item Express.js 5.1.0 - Web application framework
-		\item MongoDB - NoSQL database
-		\item Mongoose 9.0.0 - MongoDB object modeling
-		\item JSON Web Token 9.0.2 - Authentication token generation
-		\item bcryptjs 3.0.3 - Password hashing
-		\item Multer 2.0.2 - File upload middleware
-		\item CORS 2.8.5 - Cross-origin resource sharing
-		\item dotenv 17.2.3 - Environment variable management
-	\end{itemize}
-	
-	\textbf{Development Tools:}
-	\begin{itemize}
-		\item Visual Studio Code - Integrated development environment
-		\item Postman - API testing and documentation
-		\item Git - Version control system
-		\item GitHub - Code repository hosting
-		\item Nodemon 3.1.11 - Auto-restart development server
-	\end{itemize}
-	
-	Table \ref{table:techstack} summarizes the complete technology stack organized by layer.
+	\begin{figure}[H]
+    \centering
+     \includegraphics[width=0.8\textwidth]{turo.jpeg} \\
+    \vspace{0.5cm}
+    \caption{Turo Car Rental}
+    
+    \end{figure}
 
-	\begin{table}[h!]
-		\caption{RideShareX Technology Stack}
-		\label{table:techstack}
-		\centering
-		\begin{tabular}{|l|l|}
-			\hline
-			\textbf{Layer} & \textbf{Technologies}\\ \hline
-			Presentation & React, Tailwind CSS, Lucide Icons \\ \hline
-			Application & Node.js, Express.js, JWT, bcrypt \\ \hline
-			Data & MongoDB, Mongoose ODM \\ \hline
-			Authentication & Google OAuth 2.0, JWT \\ \hline
-			File Handling & Multer middleware \\ \hline
-		\end{tabular}
-	\end{table}
-	
-	\subsection{Hardware Specifications}
-	
-	\textbf{Development Environment Requirements:}
-	\begin{itemize}
-		\item Processor: Intel Core i3 or equivalent (minimum), Intel Core i5/i7 or equivalent (recommended)
-		\item RAM: 4 GB (minimum), 8 GB or higher (recommended)
-		\item Storage: 10 GB free disk space for development environment
-		\item Operating System: Windows 10/11, macOS 10.14+, or Linux (Ubuntu 18.04+)
-	\end{itemize}
-	
-	\textbf{End User Requirements:}
-	\begin{itemize}
-		\item Any device with modern web browser (Chrome 90+, Firefox 88+, Safari 14+, Edge 90+)
-		\item Internet connection: Minimum 2 Mbps for basic functionality
-		\item Screen resolution: 320px width minimum (mobile responsive)
-	\end{itemize}
-	
-	\textbf{Production Server Requirements:}
-	\begin{itemize}
-		\item Virtual Private Server (VPS) or cloud hosting platform
-		\item CPU: 2 cores minimum
-		\item RAM: 2 GB minimum, 4 GB recommended
-		\item Storage: 20 GB SSD
-		\item Bandwidth: 1 TB monthly transfer
-	\end{itemize}
-	
-	\section{Database Design}
-	
-	RideShareX employs MongoDB, a document-oriented NoSQL database, chosen for its flexibility, scalability, and natural alignment with JavaScript-based applications. The database schema consists of four primary collections: Users, Vehicles, Bookings, and Payments.
-	
-	\textbf{User Schema:} Stores user authentication and profile information including Google ID, email, name, phone number, city, profile picture, verification status, and role (renter/owner). The schema uses Mongoose to define validation rules and default values.
-	
-	\textbf{Vehicle Schema:} Contains vehicle listing details including owner reference (User ID), name, make, model, year, registration number, price per day, location, description, photos array, availability status, and creation timestamp. Implements referential integrity through MongoDB's ObjectId references.
-	
-	\textbf{Booking Schema:} Manages rental transactions with fields for vehicle reference, renter reference, owner reference, start date, end date, total price, booking status (pending, confirmed, completed, cancelled, rejected), payment status (pending, completed, failed), and timestamps for creation and updates.
-	
-	\textbf{Payment Schema:} Records payment transactions including booking reference, user reference, amount, transaction ID, payment method (demo wallet, demo QR, cash), payment status, fare breakdown (base fare, distance fare, service fee), and timestamp. This schema supports the demo payment system while maintaining structure for future real payment integration.
-	
-	\section{Implementation Details}
-	
-	\subsection{Authentication Flow}
-	
-	The authentication system implements a secure, industry-standard approach using Google OAuth 2.0 for user login and JWT for session management. The flow begins when a user clicks the Google login button, triggering the OAuth consent screen. Upon successful authentication, Google returns an authorization code, which the frontend exchanges for user profile information. The backend receives this profile data, checks if the user exists in the database, creates a new user record if necessary, generates a JWT token with 7-day expiry, and returns the token to the frontend. Subsequent requests include this JWT token in the Authorization header, which the authentication middleware validates before allowing access to protected routes.
-	
-	\subsection{Vehicle Listing Process}
-	
-	Vehicle owners can list their vehicles through a multi-step form that collects essential information. The process involves form submission with vehicle details, photo upload using Multer middleware (which handles multipart/form-data), file validation (checking type and size), storage in the public/photos directory, database record creation with photo paths, and response to frontend confirming successful listing. The implementation ensures data validation at both frontend and backend layers, preventing invalid or malicious data entry.
-	
-	\subsection{Booking Management}
-	
-	The booking system implements a state machine pattern to manage the booking lifecycle. States include pending (initial booking request), confirmed (owner approved), completed (rental period finished), cancelled (user cancelled), and rejected (owner declined). State transitions are controlled by business logic rules, ensuring data consistency. The system checks for booking conflicts, preventing double-booking of vehicles.
-	
-	\subsection{Payment Processing}
-	
-	The demo payment system simulates real-world payment flows without handling actual money. The implementation includes payment modal UI, fare calculation logic (70\% base fare, 20\% distance fare, 10\% service fee), payment method selection, transaction ID generation (DEMO-timestamp-random), simulated processing delay (2-3 seconds), random success/failure (90\% success rate), database record creation, and booking status update. This approach demonstrates complete payment workflows while clearly indicating the demo nature through UI elements and transaction IDs.
-	
-	
-	\chapter{Discussion on Achievements}
-	
-	The development of RideShareX successfully achieved its primary objectives, delivering a functional peer-to-peer vehicle rental platform with comprehensive features. This chapter discusses the implemented features, challenges encountered during development, solutions applied, and measurable outcomes.
-	
-	\section{Implemented Features}
-	
-	\subsection{Core Authentication System}
-	
-	The platform successfully implements Google OAuth 2.0 integration, providing users with seamless, secure authentication without requiring password management. The JWT-based session management with 7-day token expiry strikes a balance between security and user convenience. Protected routes and middleware ensure that only authenticated users can access sensitive functionality, while role-based access control distinguishes between renters and vehicle owners.
-	
-	Testing demonstrated 100\% authentication success rate with Google OAuth, with token generation and validation performing consistently across all tested scenarios. The implementation successfully prevents unauthorized access to protected endpoints, validating the security architecture.
-	
-	\subsection{Vehicle Management System}
-	
-	Vehicle owners can list their vehicles with comprehensive details including photos, descriptions, pricing, and location information. The Multer middleware integration enables secure file uploads with validation for file types (JPEG, PNG) and size limits (5MB maximum). The system stores vehicle photos in the public directory with organized naming conventions, ensuring easy retrieval and management.
-	
-	The vehicle listing interface provides intuitive forms with real-time validation, preventing submission of incomplete or invalid data. Vehicle owners can view all their listings in a centralized dashboard, edit details as needed, and toggle availability status. Testing confirmed successful handling of multiple file uploads, proper storage organization, and accurate database record creation.
-	
-	\subsection{Real-Time Booking System}
-	
-	The booking system implements a complete workflow from initial request through payment completion. Renters can browse available vehicles, submit booking requests with specified date ranges, and track booking status through their dashboard. Vehicle owners receive notifications of new booking requests, can approve or reject requests through an intuitive interface, and monitor all bookings associated with their vehicles.
-	
-	The system successfully prevents booking conflicts through date range validation, ensuring vehicles cannot be double-booked for overlapping periods. Booking status updates propagate in real-time, with the UI reflecting current states accurately. During testing, 100\% of booking requests were properly recorded, status transitions functioned correctly, and no booking conflicts occurred.
-	
-	\subsection{Demo Payment Integration}
-	
-	The demo payment system provides a comprehensive simulation of real-world payment processing. The implementation includes a professional payment modal with fare breakdown (base fare 70\%, distance fare 20\%, service fee 10\%), multiple payment method options (demo wallet, demo QR, cash), transaction ID generation following a consistent format, processing delay simulation (2-3 seconds), and success/failure handling with 90\% success probability.
-	
-	Payment transactions are recorded in the database with complete details, enabling transaction history viewing and financial tracking. The demo nature is clearly communicated through UI badges and transaction ID prefixes, ensuring users understand no real money is involved. Testing validated that all payment methods function correctly, fare calculations are accurate, and transaction records are properly created and associated with bookings.
-	
-	\subsection{User Interface and Experience}
-	
-	The platform features a modern, responsive interface built with React and styled using Tailwind CSS. The design ensures consistent user experience across devices, from large desktop monitors to small mobile screens. Navigation is intuitive with a persistent navbar, clear call-to-action buttons, and logical information hierarchy.
-	
-	User feedback is provided through modal dialogs, toast notifications, and inline validation messages. Loading states during asynchronous operations inform users that processing is occurring, reducing perceived latency. Error handling displays user-friendly messages rather than technical error codes, improving overall experience.
-	
-	Usability testing with sample users indicated positive feedback regarding interface clarity, ease of navigation, and overall aesthetic appeal. The responsive design successfully adapted to various screen sizes without functionality loss or visual distortion.
-	
-	\section{Challenges and Solutions}
-	
-	\subsection{Cross-Origin Resource Sharing (CORS)}
-	
-	Initial development encountered CORS errors when the React frontend attempted to communicate with the Express backend. This occurred because browsers block cross-origin requests by default for security reasons. The solution involved configuring CORS middleware in the Express application, specifying allowed origins (development: localhost:3000, production: actual domain), allowing credentials for JWT cookie handling, and specifying allowed HTTP methods and headers. This configuration resolved all CORS issues while maintaining appropriate security restrictions.
-	
-	\subsection{JWT Token Management}
-	
-	Managing JWT tokens across application components presented challenges, particularly regarding token storage, refresh, and invalidation. The solution implemented token storage in localStorage with encrypted format, automatic token inclusion in Axios request headers through interceptors, token validation middleware on the backend verifying signature and expiry, and graceful handling of expired tokens with redirect to login page. This approach provides secure, seamless authentication without requiring user intervention for each request.
-	
-	\subsection{File Upload Handling}
-	
-	Implementing secure file uploads with proper validation and storage required careful consideration. Challenges included preventing malicious file uploads, managing storage organization, and handling multiple files per vehicle. The solution employed Multer middleware with strict validation (file type whitelist, size limits), organized storage with timestamp-based unique filenames, server-side validation duplicating frontend checks, and proper error handling for upload failures. These measures ensure secure, organized file management.
-	
-	\subsection{State Management Complexity}
-	
-	As the application grew, managing state across multiple components became increasingly complex. Authentication state, user profile data, booking information, and UI state required coordination across the application. The solution implemented React Context API for global state management (authentication context, user context), component-level state for local UI concerns, and careful prop passing to avoid prop drilling. This structure provides clear state ownership while maintaining component reusability.
-	
-	\subsection{Database Query Optimization}
-	
-	Initial database queries showed performance degradation as data volume increased during testing. The solution involved implementing MongoDB indexes on frequently queried fields (user email, vehicle owner ID, booking status), using Mongoose population selectively to avoid over-fetching, implementing pagination for list views, and caching frequently accessed static data. These optimizations significantly improved query response times, maintaining performance under load.
-	
-	\section{Performance Metrics}
-	
-	Performance testing conducted on the developed system yielded positive results across multiple metrics:
-	
-	\begin{itemize}
-		\item Average page load time: 1.8 seconds on 10 Mbps connection
-		\item API response time: 280ms average for standard operations
-		\item Authentication flow completion: 3.5 seconds including Google OAuth redirect
-		\item File upload success rate: 98\% (failures due to network issues)
-		\item Payment processing simulation: 2.5 seconds average
-		\item Booking creation: 450ms average including database write
-		\item Concurrent user support: 50 simultaneous users without degradation
-	\end{itemize}
-	
-	These metrics demonstrate that the system meets and exceeds the established non-functional requirements, providing responsive performance suitable for production deployment.
-	
-	\chapter{Conclusion and Recommendation}
-	
-	RideShareX successfully demonstrates the viability and potential of peer-to-peer vehicle rental platforms built on modern web technologies. The project achieved all primary objectives, delivering a functional, secure, and user-friendly application that facilitates vehicle sharing within communities. This chapter summarizes the achievements, discusses limitations, and proposes future enhancements.
-	
-	\section{Project Achievements}
-	
-	The project successfully developed a comprehensive peer-to-peer vehicle rental platform using the MERN stack, demonstrating proficiency in full-stack web development. The implementation of Google OAuth 2.0 and JWT-based authentication provides enterprise-grade security while maintaining user convenience. The booking management system successfully handles the complete rental lifecycle from initial request through payment completion, with proper state management and conflict prevention.
-	
-	The demo payment system, while not processing real transactions, accurately simulates real-world payment flows and demonstrates understanding of payment gateway integration principles. The responsive user interface ensures accessibility across devices, with Tailwind CSS providing consistent, modern styling. The RESTful API architecture establishes a solid foundation for future expansion, including mobile application development.
-	
-	All functional requirements specified in the project objectives were successfully implemented and validated through testing. The system performs efficiently under normal load conditions, with response times well within acceptable ranges. The codebase follows industry best practices, with modular architecture, comprehensive comments, and organized structure facilitating future maintenance and enhancement.
-	
-	\section{Limitations}
-	
-	Despite successful implementation of core features, RideShareX has several limitations that should be acknowledged:
-	
-	\subsection{Payment System}
-	
-	The current implementation uses a demo payment system that simulates transactions without processing real money. While this demonstrates understanding of payment flows, production deployment requires integration with actual payment gateways such as Stripe, PayPal, or local payment providers. This integration involves additional complexity including PCI compliance, webhook handling, refund processing, and dispute resolution.
-	
-	\subsection{Insurance and Liability}
-	
-	The platform currently does not address insurance coverage or liability protection for vehicle owners and renters. Real-world deployment requires legal framework establishment, insurance partnerships or built-in coverage options, liability waiver mechanisms, and dispute resolution procedures. These business and legal aspects are critical for production use but were beyond the scope of this technical project.
-	
-	\subsection{Vehicle Verification}
-	
-	The system accepts vehicle listings without rigorous verification of ownership, registration validity, or vehicle condition. Production systems typically implement document verification processes, vehicle inspection requirements, background checks for users, and quality control mechanisms. These verification procedures are essential for building trust but require additional infrastructure and potentially manual review processes.
-	
-	\subsection{Real-Time Communication}
-	
-	The platform lacks real-time messaging between users. Communication between vehicle owners and renters relies on external channels or booking notes. Implementing in-app messaging using WebSocket technologies (Socket.io) would enhance user experience but was not included in the current version.
-	
-	\subsection{Advanced Search and Recommendations}
-	
-	While basic vehicle search functionality exists, the platform lacks advanced filtering options (vehicle type, features, transmission type, fuel type) and recommendation algorithms. A sophisticated recommendation system using machine learning to suggest vehicles based on user preferences and history would significantly enhance user experience.
-	
-	\subsection{Mobile Application}
-	
-	The current implementation is web-based with responsive design. Native mobile applications for iOS and Android would provide better performance, offline capabilities, and access to device features such as GPS for location-based search and camera for direct photo uploads.
-	
-	\section{Future Enhancements}
-	
-	Building upon the current foundation, several enhancements would improve RideShareX's functionality and user experience:
-	
-	\subsection{Real Payment Gateway Integration}
-	
-	Priority should be given to integrating production-ready payment gateways. This would involve selecting appropriate payment providers based on target market, implementing secure payment processing following PCI DSS standards, adding support for multiple payment methods (credit cards, digital wallets, bank transfers), implementing automated payout systems for vehicle owners, and developing comprehensive transaction reporting and financial dashboards.
-	
-	\subsection{Rating and Review System}
-	
-	Implementing mutual ratings where renters rate vehicles and owners rate renters would build trust and accountability. Features would include star ratings (1-5) with written reviews, photo uploads in reviews showing vehicle condition, response mechanism for owners to address negative reviews, aggregate ratings displayed on vehicle listings, and review moderation to prevent abuse.
-	
-	\subsection{GPS Integration and Tracking}
-	
-	Location-based features would enhance functionality through map integration showing nearby available vehicles, GPS tracking during rental periods for security, geofencing to alert owners if vehicles leave designated areas, mileage tracking for distance-based pricing, and location verification for pickup and dropoff.
-	
-	\subsection{Advanced Notification System}
-	
-	Enhanced notifications would improve user engagement through real-time push notifications for booking updates, email notifications for important events, SMS notifications for critical alerts, customizable notification preferences, and reminder notifications for upcoming bookings and returns.
-	
-	\subsection{Analytics Dashboard}
-	
-	Comprehensive analytics for both users and administrators would provide valuable insights. Owner analytics would include earning reports, booking statistics, vehicle performance metrics, and occupancy rates. Platform analytics would include user growth metrics, popular vehicle types, geographic distribution, and revenue tracking.
-	
-	\subsection{Social Features}
-	
-	Social integration would enhance community building through user profiles with bio and interests, social media sharing of trips, referral programs with incentives, community forums for vehicle owners and renters, and verified user badges for trusted members.
-	
-	\subsection{Insurance Integration}
-	
-	Partnering with insurance providers to offer built-in coverage would include optional insurance selection during booking, automatic claims processing for incidents, liability coverage for both owners and renters, and damage protection plans with various tiers.
-	
-	\subsection{Multi-Language Support}
-	
-	Implementing internationalization (i18n) would expand accessibility through support for multiple languages, cultural customization for date, time, and currency formats, right-to-left language support, and localized content management.
-	
-	\subsection{Blockchain for Transparency}
-	
-	Exploring blockchain technology could enhance trust and transparency through immutable transaction records, smart contracts for automated rental agreements, cryptocurrency payment options, and decentralized identity verification.
-	
-	\section{Concluding Remarks}
-	
-	RideShareX demonstrates the successful application of modern web technologies to solve real-world problems in the transportation and shared economy sectors. The project validates the technical feasibility of peer-to-peer vehicle rental platforms while highlighting the business, legal, and operational considerations necessary for production deployment.
-	
-	The MERN stack proved to be an excellent choice for this application, providing the flexibility, performance, and scalability required for a dynamic web application. The development process enhanced understanding of full-stack development, authentication mechanisms, database design, API development, and user interface design.
-	
-	The platform's architecture supports future expansion and enhancement, with clean separation of concerns and modular design facilitating maintenance and feature addition. The knowledge gained through this project provides a solid foundation for developing production-ready applications and understanding the complexities of real-world software development.
-	
-	As the shared economy continues to grow and evolve, platforms like RideShareX will play an increasingly important role in optimizing resource utilization, reducing environmental impact, and providing economic opportunities for individuals. The future of mobility lies in flexible, community-driven solutions that prioritize accessibility, sustainability, and user empowerment. RideShareX represents a step toward that future, demonstrating both the possibilities and challenges inherent in building such platforms.
-	
-	\bibliography{report}
-	
-	
+    \section{Getaround}
+
+    Getaround\cite{getaround} is a peer-to-peer car-sharing platform that differentiates itself through a high-tech, ultra-short-term rental model, allowing users to book cars by the hour using proprietary "Getaround Connect" hardware for instant, keyless access. Its core strengths include a seamless, 24/7 automated user experience that eliminates the need for host-guest meetings and a focus on dense urban environments where hourly utility is more valuable than long-term travel. However, its weaknesses stem from a narrower vehicle selection compared to Turo, a history of logistical challenges with its hardware-dependent model, and recent financial instability; notably, as of early 2025, the company announced a wind-down of its U.S. operations due to unsustainable unit economics and high overhead from its "always-on" technology requirements.
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.8\textwidth]{getaround.jpeg}
+        \caption{Getaround Car Rental}
+    \end{figure}
+
+    \section{Zoomcar}
+
+    Zoomcar\cite{zoomcar} is India's largest peer-to-peer car-sharing marketplace, connecting local car owners with guests seeking flexible, self-drive mobility for everything from hourly errands to multi-day trips. Its primary strengths include a massive first-mover advantage and 40\% brand recall in India, a highly scalable asset-light model that has achieved eight consecutive quarters of positive contribution profit as of 2026, and a strategic pivot into EV rentals that allows users to "try before they buy."
+
+    \begin{figure}[H]
+    \centering
+     \includegraphics[width=0.8\textwidth]{zoomcar.jpeg} \\
+    \vspace{0.5cm}
+    \caption{Zoom Car Rental}
+    
+    \end{figure}
+
+    \section{Comparison and Analysis}
+    \begin{table}[H]
+    \centering
+    
+    \label{tab:p2p_comparison}
+    \small % Slightly smaller font to help the text fit comfortably
+    \begin{tabularx}{\textwidth}{l Y Y Y}
+        \toprule
+        \textbf{Feature} & \textbf{Turo} & \textbf{Getaround} & \textbf{Zoomcar} \\ 
+        \midrule
+        \textbf{Primary Market} & USA, Canada, UK, Australia & Europe (U.S. Ops closed 2025) & India, SE Asia, Egypt \\ \addlinespace
+        
+        \textbf{Best Use Case} & Vacations \& Travel (Daily+) & Urban Utility (Hourly/Daily) & Daily Commute \& EV Trials \\ \addlinespace
+        
+        \textbf{Key Access} & Mixed (Hand-off or Turo Go) & Fully Digital (Connect Tech) & Tech-enabled (Keyless/App) \\ \addlinespace
+        
+        \textbf{Insurance} & Proprietary (No CC coverage) & Included in automated fee & Trip Protection (Universal Sompo) \\ \addlinespace
+        
+        \textbf{Vehicle Variety} & High (Exotics, SUVs, Trucks) & Moderate (Hatchbacks, Sedans) & High (Hatchbacks to EVs) \\ \addlinespace
+        
+        \textbf{Core Advantage} & "Hospitality" \& Exact Models & Automation \& Convenience & Market Dominance \& Local Focus \\ \addlinespace
+        
+        \textbf{Biggest Risk} & High fees \& Host cancellations & Hardware dependency \& Stability & Variable car quality \& High debt \\ 
+        \bottomrule
+    \end{tabularx}
+    \caption{Peer-to-Peer Vehicle Rental Market Comparison}
+\end{table}
+
+	
+	
+\chapter{Design And Implementation}
+
+This chapter explains the procedures and methods followed during the development of the RideShareX project. It presents the sequential steps undertaken to analyze system requirements, design the architecture, implement core functionalities, and validate the system through testing. The chapter also discusses system workflows, architectural decisions, and database design to provide a clear understanding of how the project was carried out.
+
+% -------------------------------------------------
+\section{Project Procedure}
+
+The RideShareX project was developed using a step-by-step and iterative development approach. Each phase was carefully planned, implemented, tested, and refined to ensure system correctness, security, and usability. Continuous feedback and testing were incorporated throughout the development lifecycle.
+
+\subsection{Step 1: Requirement Analysis}
+
+The initial phase focused on identifying the core objective of the project, which is to develop a peer-to-peer vehicle rental platform enabling users to rent and list vehicles securely.
+
+Existing ride-sharing and vehicle rental platforms were studied to understand common features, user expectations, and system limitations. Based on this analysis, the following requirements were defined:
+
+\textbf{Functional Requirements:}
+\begin{itemize}
+	\item User authentication and authorization
+	\item Vehicle listing and image upload
+	\item Booking request and approval mechanism
+	\item Demo payment processing
+\end{itemize}
+
+\textbf{Non-Functional Requirements:}
+\begin{itemize}
+	\item Security and data protection
+	\item System scalability and performance
+	\item User-friendly and responsive interface
+\end{itemize}
+
+\subsection{Step 2: System Design}
+
+A three-tier client–server architecture was selected to organize the system efficiently. The system was divided into the following layers:
+
+\begin{itemize}
+	\item \textbf{Presentation Layer:} Manages user interaction and user interface
+	\item \textbf{Application Layer:} Handles business logic and API processing
+	\item \textbf{Data Layer:} Manages database and cloud-based image storage
+\end{itemize}
+
+System diagrams were designed to represent:
+\begin{itemize}
+	\item User authentication workflow
+	\item Vehicle listing and image upload process
+	\item Booking and approval workflow
+	\item Payment process flow
+\end{itemize}
+
+Database structure and relationships between users, vehicles, bookings, and payments were also planned during this phase.
+
+\subsection{Step 3: Application Development}
+
+The frontend was developed using React\cite{react} following a component-based architecture. Tailwind CSS\cite{tailwind} was used to implement a responsive user interface supporting desktop, tablet, and mobile devices.
+
+The backend was implemented using Node.js\cite{node} and Express.js\cite{express}, exposing RESTful API\cite{rest} endpoints for:
+\begin{itemize}
+	\item User authentication and authorization
+	\item Vehicle management
+	\item Booking management
+	\item Payment processing
+\end{itemize}
+
+MongoDB\cite{mongodb} was used to store structured data, while Cloudinary\cite{cloudinary} was integrated for secure cloud-based image storage. Only image URLs were stored in the database to reduce storage overhead.
+
+Secure authentication was implemented using Google OAuth 2.0\cite{oauth} and JSON Web Tokens (JWT)\cite{jwt} for session management.
+
+\subsection{Step 4: Booking and Payment Methods}
+
+The booking workflow was implemented with clearly defined states:
+\begin{itemize}
+	 (PENDING, CONFIRMED, REJECTED, EXPIRED, CANCELLED,
+COMPLETED)
+\end{itemize}
+
+Business logic was added to check vehicle availability and prevent overlapping or double bookings. A demo payment system was implemented to simulate real payment processes. Unique transaction IDs were generated for each payment, and booking and payment statuses were updated based on transaction results.
+
+\subsection{Step 5: Testing and Validation}
+
+Unit testing was conducted for individual components such as:
+\begin{itemize}
+	\item Authentication system
+	\item Booking logic
+	\item Payment calculation
+\end{itemize}
+
+Integration testing verified proper communication between frontend and backend services, as well as database and Cloudinary integration. User testing was performed to evaluate usability, responsiveness, and error handling. Identified bugs were fixed, and system performance was optimized.
+
+\subsection{Step 6: Deployment and Documentation}
+
+The system was prepared for deployment on a cloud-based server. Environment variables were used to secure sensitive configuration data. Version control was maintained using Git and GitHub.
+
+Comprehensive documentation was prepared, including system architecture, development procedures, and workflow diagrams, ensuring alignment with academic requirements and project objectives.
+
+\section{User Activity Flow Interpretation}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.75\textwidth]{flowchart.jpeg}
+    \caption{User Activity Flow of RideShareX}
+    \label{fig:userflow}
+\end{figure}
+
+Figure~\ref{fig:userflow} illustrates the User Activity Flow of the RideShareX application, showing the complete sequence of interactions performed by a user from accessing the platform to booking a vehicle or becoming a host.
+
+The flow begins when a user visits the RideShareX website. If the user is not authenticated, they are required to log in using Google OAuth. New users must complete their basic profile details before proceeding, ensuring that all users have valid and identifiable accounts.
+
+After successful authentication, users can browse available vehicle listings and view detailed vehicle information. Access control is enforced based on verification status. Verified users are allowed to perform core actions such as booking vehicles or becoming hosts, while non-verified users are limited to browsing only.
+
+When a verified user selects an available vehicle, booking dates can be chosen and a booking request is submitted. The booking is initially created with a \textit{PENDING} status and awaits approval from the vehicle owner. Upon approval, the user proceeds to the payment stage. Successful payment updates the booking status to \textit{CONFIRMED}. In cases of rejection or payment failure, the booking process is terminated accordingly.
+
+Verified users may also access the \textit{Become Host} feature, which allows them to add vehicle details, upload images, and list vehicles for rental. Non-verified users attempting restricted actions are prompted to complete citizenship verification and await administrator approval.
+
+Finally, the user may view their bookings, continue browsing the platform, or log out of the system, ensuring a controlled, secure, and structured user journey.
+
+% -------------------------------------------------
+\section{Database Design of RideShareX}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[
+        width=\textwidth,
+        height=0.9\textheight,
+        keepaspectratio
+    ]{er_diagram.jpeg}
+    \caption{Entity Relationship Diagram of RideShareX}
+    \label{fig:erdiagram}
+\end{figure}
+
+The database design of RideShareX is modeled using MongoDB\cite{mongodb}, a NoSQL document-oriented database, which provides flexibility and scalability for handling user data, vehicles, bookings, and payments. The system consists of four main collections: users, vehicles, bookings, and payments. Figure~\ref{fig:erdiagram} illustrates the relationships among these collections.
+
+\subsection*{1. Users Collection}
+
+The users collection stores information about all registered users of the platform.
+
+\textbf{Key attributes include:}
+\begin{itemize}
+	\item \_id: Unique identifier for each user (ObjectId)
+	\item googleId and email: Unique identifiers for authentication
+	\item name, picture, phone, address, city: Profile information
+	\item isProfileComplete, isVerified, verificationStatus: Account completeness and verification flags
+	\item role: Defines whether the user is a user or an admin
+	\item hasListedVehicles: Indicates whether the user has listed vehicles
+	\item walletBalance: Tracks in-app wallet balance
+	\item createdAt and lastLogin: Audit fields for user activity
+\end{itemize}
+
+\textbf{Purpose:} This collection maintains user data and supports authentication, authorization, and account management.
+
+\subsection*{2. Vehicles Collection}
+
+The vehicles collection stores information about vehicles listed for rental by users.
+
+\textbf{Key attributes include:}
+\begin{itemize}
+	\item \_id: Unique identifier for each vehicle
+	\item name, make, model, year, seats, fuelType, type, image: Vehicle details
+	\item location and ownerLocation: Physical location of the vehicle
+	\item pricePerDay: Rental price per day
+	\item owner: Reference to the vehicle owner (users.\_id)
+	\item status: Indicates whether the vehicle is active or inactive
+	\item rating, totalRatings, completedBookings: Usage and feedback metrics
+	\item createdAt and updatedAt: Audit fields
+\end{itemize}
+
+\textbf{Purpose:} This collection supports vehicle listing, searching, and rental operations.
+
+\subsection*{3. Bookings Collection}
+
+The bookings collection manages all bookings made by users.
+
+\textbf{Key attributes include:}
+\begin{itemize}
+	\item \_id: Unique identifier for each booking
+	\item user, vehicle, owner: References to user, vehicle, and owner
+	\item pickupDate, dropoffDate, totalDays, pricePerDay, totalPrice: Booking and pricing details
+	\item status: Booking state (PENDING, CONFIRMED, REJECTED, EXPIRED, CANCELLED, COMPLETED)
+	\item bookingTime, expiresAt: Time-related metadata
+	\item paymentStatus and paymentMethod: Payment tracking
+	\item message and rejectionReason: Optional communication fields
+	\item createdAt and updatedAt: Audit fields
+\end{itemize}
+
+\textbf{Purpose:} This collection handles booking lifecycle and coordination between users and vehicle owners.
+
+\subsection*{4. Payments Collection}
+
+The payments collection tracks all financial transactions.
+
+\textbf{Key attributes include:}
+\begin{itemize}
+	\item \_id: Unique identifier for each payment
+	\item booking, user, owner, vehicle: Associated references
+	\item amount, paymentMethod, status: Payment details
+	\item transactionId: Unique transaction identifier
+	\item initiatedAt, completedAt, failureReason: Transaction audit fields
+	\item isDemoTransaction and metadata: Testing and auxiliary data
+\end{itemize}
+
+% -------------------------------------------------
+\section{Use Case Diagram}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[
+        width=\textwidth,
+        height=0.85\textheight,
+        keepaspectratio
+    ]{usecase_diagram.jpeg}
+    \caption{Use Case Diagram of RideShareX}
+    \label{fig:usecase}
+\end{figure}
+
+Figure~\ref{fig:usecase} illustrates the Use Case Diagram of the RideShareX system, representing the interactions between users and the platform through a single unified account model. Unlike traditional systems that separate renters and vehicle owners, RideShareX allows a common user account to perform both roles based on verification and access permissions.
+
+The primary actor in the system is the \textbf{User}. A user can register or log in using Google OAuth authentication. During the authentication process, users may be required to complete their profile information to gain full access to system features. Profile completion ensures the availability of essential user details before performing core operations.
+
+Users can browse available vehicles and view detailed vehicle information without restrictions. To perform advanced actions such as booking vehicles or listing vehicles for rent, users must request verification by uploading required documents. Verification status determines access to role-specific functionalities within the platform.
+
+Once verified, users can book vehicles by selecting available dates. The system checks vehicle availability and sends booking requests to the vehicle owner, who is also a user of the system. Booking requests can be approved or rejected by the vehicle owner through the same unified user account. Upon approval, users proceed to the payment stage.
+
+The payment process simulates real-world transactions by generating a unique transaction ID and updating the booking status accordingly. Users can view booking history and cancel bookings based on platform rules.
+
+The same verified user can also act as a vehicle provider by listing vehicles for rental. This includes uploading vehicle images and managing vehicle listings. Users who own vehicles can approve or reject booking requests submitted by other users, demonstrating the dual-role capability supported by the system.
+
+The \textbf{Admin} actor is responsible for system-level operations such as user verification, user management, and system monitoring. Administrative functions ensure platform security, data integrity, and controlled access to sensitive operations.
+
+Overall, the Use Case Diagram emphasizes RideShareX’s unified user model, role-based access control, and flexible participation structure, enabling users to seamlessly switch between renter and vehicle owner roles while maintaining system security and usability.
+
+% -------------------------------------------------
+\chapter{System Requirements Specifications}
+
+This chapter describes the software and hardware requirements necessary for the development, deployment, and execution of the RideShareX platform. The specifications outlined in this chapter ensure that the system operates efficiently, securely, and reliably across different environments.
+
+\section{Software Specifications}
+
+\subsection*{Frontend Framework}
+\begin{itemize}
+	\item \textbf{React}: Used for building user interface components and managing application state through a component-based architecture.
+\end{itemize}
+
+\subsection*{Backend Framework}
+\begin{itemize}
+	\item \textbf{Node.js}: JavaScript runtime environment used for executing server-side code.
+	\item \textbf{Express.js}: Framework used for handling server-side logic and developing RESTful APIs.
+\end{itemize}
+
+\subsection*{Database}
+\begin{itemize}
+	\item \textbf{MongoDB}: NoSQL database used for storing user, vehicle, booking, and payment-related data.
+\end{itemize}
+
+\subsection*{Image Storage Service}
+\begin{itemize}
+	\item \textbf{Cloudinary}: Cloud-based service used for storing, managing, and delivering vehicle images securely.
+\end{itemize}
+
+\subsection*{Authentication and Security}
+\begin{itemize}
+	\item \textbf{Google OAuth 2.0}: Used for secure user authentication.
+	\item \textbf{JSON Web Token (JWT)}: Used for secure session management and authorization.
+\end{itemize}
+
+\subsection*{Frontend Libraries and Tools}
+\begin{itemize}
+	\item \textbf{Axios}: Used for communication between frontend and backend APIs.
+	\item \textbf{React Router DOM}: Used for client-side routing and navigation.
+	\item \textbf{Tailwind CSS}: Used for responsive and modern user interface design.
+\end{itemize}
+
+\subsection*{Development Tools}
+\begin{itemize}
+	\item \textbf{Visual Studio Code}: Source code editor used for development.
+	\item \textbf{Git}: Version control system used for collaborative development.
+	\item \textbf{GitHub}: Remote repository for source code management.
+	\item \textbf{Postman}: Tool used for API testing and debugging.
+	\item \textbf{Nodemon}: Utility used for automatically restarting the backend server during development.
+\end{itemize}
+
+\subsection*{Operating System}
+\begin{itemize}
+	\item \textbf{Windows 10/11, macOS, or Linux (Ubuntu recommended)}: Supported operating systems for development and deployment.
+\end{itemize}
+
+\section{Hardware Specifications}
+
+\subsection*{Processor}
+\begin{itemize}
+	\item Intel Core i3 or equivalent (Recommended: Intel Core i5 / AMD Ryzen 5)
+\end{itemize}
+
+\subsection*{Memory (RAM)}
+\begin{itemize}
+	\item Minimum 4 GB (Recommended: 8 GB for smooth development and testing)
+\end{itemize}
+
+\subsection*{Storage}
+\begin{itemize}
+	\item At least 2 GB of free disk space (SSD recommended for better performance)
+\end{itemize}
+
+\subsection*{Graphics}
+\begin{itemize}
+	\item Integrated GPU (Sufficient for web-based applications)
+\end{itemize}
+
+\subsection*{Internet Connection}
+\begin{itemize}
+	\item Required for development, testing, cloud services, and API communication
+\end{itemize}
+
+\subsection*{Display Resolution}
+\begin{itemize}
+	\item Minimum resolution of 1280 $\times$ 720 pixels (Responsive design supported)
+\end{itemize}
+
+	% -------------------------------------------------
+\chapter{Discussion on the Achievements}
+
+This chapter discusses the achievements of the RideShareX project by analyzing the implemented features, challenges encountered during development, deviations from the initial objectives, and measurable results obtained through testing and evaluation. The discussion highlights both the technical and practical aspects of the system while reflecting on limitations and problem-solving strategies applied during development.
+
+\section{Features}
+
+The RideShareX platform successfully implements several vital features required for a peer-to-peer vehicle rental system. These features collectively fulfill the core objectives of the project and demonstrate the practical application of modern web technologies.
+
+\subsection{User Authentication and Authorization}
+
+RideShareX implements a secure and reliable authentication system using Google OAuth 2.0\cite{oauth} combined with JSON Web Tokens (JWT)\cite{jwt}. This approach eliminates the need for traditional password-based authentication, reducing security risks related to password storage and management. JWT-based session handling ensures stateless authentication with controlled access to protected routes.
+
+The system enforces access control based on authentication and verification status, ensuring that only authorized users can perform sensitive actions such as booking vehicles or listing vehicles for rental.
+
+\subsection{Unified User and Vehicle Owner Model}
+
+A key achievement of the project is the implementation of a single unified user account model. The same user account can function as both a renter and a vehicle owner, depending on the actions performed. This design simplifies user management, improves usability, and aligns with real-world peer-to-peer platforms.
+
+Verified users can book vehicles, list their own vehicles, and approve or reject booking requests, demonstrating flexible role-based behavior without requiring multiple accounts.
+
+\subsection{Vehicle Listing and Management}
+
+Users can list vehicles by providing detailed information such as vehicle type, price per day, location, and images. Vehicle images are uploaded securely using Cloudinary\cite{cloudinary}, ensuring scalable and reliable image storage. The system allows users to edit vehicle details, manage availability status, and monitor bookings associated with their vehicles.
+
+Input validation at both frontend and backend levels ensures data integrity and prevents invalid or malicious submissions.
+
+\subsection{Booking and Availability Management}
+
+The booking system supports a complete rental lifecycle including booking request creation, approval or rejection by the vehicle owner, payment processing, and booking completion. The system prevents overlapping bookings by validating date ranges, ensuring accurate vehicle availability management.
+
+Booking statuses such as \textbf{PENDING}, \textbf{CONFIRMED}, \textbf{REJECTED}, \textbf{CANCELLED}, and \textbf{COMPLETED} provide transparency and clear workflow tracking for both renters and vehicle owners.
+
+\subsection{Demo Payment System}
+
+RideShareX includes a demo payment system that simulates real-world payment workflows. The system generates unique transaction IDs, calculates rental costs, and updates booking and payment statuses accordingly. Although real money is not processed, this implementation demonstrates a complete understanding of payment flow integration and transaction management.
+
+\subsection{Responsive User Interface}
+
+The user interface is developed using React\cite{react} and Tailwind CSS\cite{tailwind}, ensuring responsiveness across desktop, tablet, and mobile devices. The interface provides intuitive navigation, real-time feedback, loading indicators, and user-friendly error messages, contributing to an improved user experience.
+
+\section{Challenges and Deviations from Objectives}
+
+During development, several challenges were encountered that influenced implementation decisions and resulted in minor deviations from initial objectives.
+
+\subsection{Integration Complexity}
+
+Integrating multiple technologies such as Google OAuth\cite{oauth}, JWT\cite{jwt}, MongoDB\cite{mongodb}, and Cloudinary\cite{cloudinary} required careful coordination. Initial compatibility issues and configuration errors caused delays, but these were resolved through modular design and extensive testing.
+
+\subsection{Payment Gateway Limitation}
+
+The original objective included implementing a payment system. However, due to security, compliance, and time constraints, a demo payment system was implemented instead of a real payment gateway. This deviation was necessary to maintain project feasibility while still demonstrating payment workflow concepts.
+
+\subsection{Verification Process}
+
+The user verification process currently relies on manual approval by an administrator. Automated document verification and background checks were considered but not implemented due to limited resources and project scope.
+
+\subsection{Scalability Constraints}
+
+While the system architecture supports scalability, extensive load testing and optimization for large-scale deployment were outside the scope of this academic project.
+
+% -------------------------------------------------
+\chapter{Conclusion and Recommendation}
+
+This chapter summarizes the overall outcomes of the RideShareX project, evaluates achieved and unachieved objectives, and provides recommendations for future improvements.
+
+RideShareX successfully achieved its primary objective of developing a peer-to-peer vehicle rental platform using modern web technologies. The system demonstrates secure authentication, flexible user roles, vehicle listing and booking management, and simulated payment processing within a unified and scalable architecture.
+
+All major functional requirements were implemented as planned, including authentication, vehicle management, booking workflow, and user interface responsiveness. The demo payment system fulfills educational objectives despite not handling real transactions. Minor objectives related to automation and large-scale optimization were not fully achieved due to scope limitations.
+
+\section{Limitations}
+
+Despite its success, the project has several limitations:
+
+\begin{itemize}
+	\item The payment system is simulated and does not process real financial transactions.
+	\item Insurance, liability handling, and legal compliance are not addressed.
+	\item Vehicle and user verification processes are partially manual.
+	\item No real-time messaging system is implemented between users.
+	\item Advanced search and recommendation features are limited.
+\end{itemize}
+
+These limitations were primarily due to time constraints, academic scope, and security considerations.
+
+\section{Future Enhancement}
+
+Several enhancements can be incorporated in future versions of RideShareX:
+
+\begin{itemize}
+	\item Integration of real payment gateways such as Stripe or PayPal.
+	\item Implementation of in-app real-time messaging using WebSockets.
+	\item Automated user and vehicle verification systems.
+	\item Rating and review mechanisms for trust building.
+	\item GPS-based location services and tracking.
+	\item Advanced filtering and recommendation algorithms.
+	\item Development of native mobile applications.
+	\item Multi-language and localization support.
+\end{itemize}
+
+\section{Final Remarks}
+
+RideShareX demonstrates the practical application of full-stack web development principles and highlights the challenges involved in building real-world platforms. The project provides valuable insights into authentication, database design, API development, and user experience design. The knowledge and experience gained through this project establish a strong foundation for future development and research in scalable web-based systems.
+
+
+\addcontentsline{toc}{chapter}{Bibliography}
+\begin{thebibliography}{99}
+
+\bibitem{mern}
+MongoDB, Inc. (2023).
+\textit{The MERN stack explained}.
+https://www.mongodb.com/mern-stack
+
+\bibitem{react}
+Meta Platforms, Inc. (2024).
+\textit{React documentation}.
+https://react.dev
+
+\bibitem{node}
+OpenJS Foundation. (2024).
+\textit{Node.js documentation}.
+https://nodejs.org/en/docs
+
+\bibitem{express}
+OpenJS Foundation. (2024).
+\textit{Express.js guide}.
+https://expressjs.com
+
+\bibitem{mongodb}
+MongoDB, Inc. (2024).
+\textit{MongoDB manual}.
+https://www.mongodb.com/docs
+
+\bibitem{oauth}
+Hardt, D. (2012).
+\textit{The OAuth 2.0 authorization framework}.
+RFC 6749.
+Internet Engineering Task Force.
+
+\bibitem{jwt}
+Jones, M., Bradley, J., \& Sakimura, N. (2015).
+\textit{JSON Web Token (JWT)}.
+RFC 7519.
+Internet Engineering Task Force.
+
+\bibitem{tailwind}
+Tailwind Labs. (2024).
+\textit{Tailwind CSS documentation}.
+https://tailwindcss.com/docs
+
+\bibitem{cloudinary}
+Cloudinary Ltd. (2024).
+\textit{Cloudinary image management platform}.
+https://cloudinary.com/documentation
+
+\bibitem{turo}
+Turo Inc. (2024).
+\textit{Peer-to-peer car sharing marketplace}.
+https://turo.com
+
+\bibitem{getaround}
+Getaround Inc. (2024).
+\textit{Car sharing platform}.
+https://www.getaround.com
+
+\bibitem{zoomcar}
+Zoomcar India Pvt. Ltd. (2024).
+\textit{Self-drive car rental platform}.
+https://www.zoomcar.com
+
+\bibitem{sharedEconomy}
+Sundararajan, A. (2016).
+\textit{The sharing economy: The end of employment and the rise of crowd-based capitalism}.
+MIT Press.
+
+\bibitem{rest}
+Fielding, R. T. (2000).
+\textit{Architectural styles and the design of network-based software architectures}.
+Doctoral dissertation, University of California, Irvine.
+
+\bibitem{cors}
+Mozilla Developer Network. (2024).
+\textit{Cross-Origin Resource Sharing (CORS)}.
+https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
+
+\bibitem{socket}
+Socket.IO. (2024).
+\textit{Real-time bidirectional event-based communication}.
+https://socket.io/docs
+
+\bibitem{blockchain}
+Nakamoto, S. (2008).
+\textit{Bitcoin: A peer-to-peer electronic cash system}.
+https://bitcoin.org/bitcoin.pdf
+
+\end{thebibliography}
+
+
+\appendix
+\chapter{Frontend Screenshots}
+\label{app:screenshots}
+
+In this section, we provide the full user interface flow for the RideShareX.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{landingPage.jpg}
+    \caption{Initial Starting Page}
+
+    \includegraphics[width=0.9\textwidth]{homepage.jpg}
+    \caption{Landing Page}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{vehiclesPage.jpg}
+    \caption{Available Vehicles Page}
+
+    \includegraphics[width=0.9\textwidth]{myBookings.jpg}
+    \caption{My Booking Page}
+
+    \includegraphics[width=0.9\textwidth]{becomeHost.jpg}
+    \caption{Become a Host Page}
+\end{figure}
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{profilePage.jpg}
+    \caption{Profile Page}
+
+\end{figure}
+
+\chapter{Backend Screenshots}
+In this section, we provide backend interface for the RideShareX.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{user_db_ schema.jpeg}
+    \caption{MongoDB User Database Schema}
+
+    \includegraphics[width=0.9\textwidth]{cloudinary_ss.jpeg}
+    \caption{Cloudinary User Interface}
+\end{figure}
+
 \end{document}
