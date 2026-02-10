@@ -44,7 +44,16 @@ export default function BookNowPage() {
   const pricePerDay = (vehicle?.pricePerDay !== undefined && vehicle?.pricePerDay !== null) ? vehicle.pricePerDay : (vehicle?.price || 2000);
 
   useEffect(() => {
-    calculatePrice();
+    if (pickupDate && dropoffDate) {
+      const pickup = new Date(pickupDate);
+      const dropoff = new Date(dropoffDate);
+      const diffTime = dropoff - pickup;
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      if (diffDays > 0) {
+        setTotalDays(diffDays);
+        setTotalPrice(diffDays * pricePerDay);
+      }
+    }
   }, [pickupDate, dropoffDate, pricePerDay]);
 
   // Fetch similar vehicles based on type

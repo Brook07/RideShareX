@@ -26,9 +26,23 @@ export default function RentalRequestsPage() {
   const [rejectionReason, setRejectionReason] = useState('');
 
   useEffect(() => {
-    fetchRequests();
+    const loadRequests = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await axios.get("http://localhost:5000/api/bookings/owner", {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setRequests(res.data.bookings || []);
+      } catch (err) {
+        console.error("Fetch requests error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadRequests();
     // Auto-refresh every 2 minutes
-    const interval = setInterval(fetchRequests, 120000);
+    const interval = setInterval(loadRequests, 120000);
     return () => clearInterval(interval);
   }, []);
 
