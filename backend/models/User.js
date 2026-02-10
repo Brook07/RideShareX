@@ -20,6 +20,14 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  originalPicture: {
+    type: String,
+    default: null
+  },
+  profilePictureUpdatedAt: {
+    type: Date,
+    default: null
+  },
   
   // Additional User Details (filled after first login)
   phone: {
