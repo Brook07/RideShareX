@@ -103,19 +103,6 @@ export default function BookNowPage() {
     fetchSimilarVehicles();
   }, [vehicle, user]);
 
-  const calculatePrice = () => {
-    if (pickupDate && dropoffDate) {
-      const pickup = new Date(pickupDate);
-      const dropoff = new Date(dropoffDate);
-      const diffTime = dropoff - pickup;
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      if (diffDays > 0) {
-        setTotalDays(diffDays);
-        setTotalPrice(diffDays * pricePerDay);
-      }
-    }
-  };
-
   const handleBooking = async () => {
     if (!vehicle) {
       alert("Vehicle information is missing");

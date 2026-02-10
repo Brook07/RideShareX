@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "name": "ridesharex",
+  "name": "ridesharex-frontend",
   "builds": [
     {
       "src": "frontend/package.json",
@@ -16,7 +16,7 @@
       "dest": "frontend/static/$1"
     },
     {
-      "src": "/(.*\\.(js|css|png|jpg|ico|json))",
+      "src": "/(.*\\.(js|css|png|jpg|jpeg|gif|ico|svg|json|woff|woff2|ttf|eot))",
       "dest": "frontend/$1"
     },
     {
@@ -24,5 +24,7 @@
       "dest": "frontend/index.html"
     }
   ],
-  "outputDirectory": "frontend/build"
+  "outputDirectory": "frontend/build",
+  "installCommand": "cd frontend && npm install",
+  "buildCommand": "cd frontend && npm run build"
 }
