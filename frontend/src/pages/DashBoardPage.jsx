@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/common/Navbar';
 import axios from 'axios';
-import { Car, Calendar, DollarSign, Star, Mail, Phone, MapPin, ChevronRight, Clock, CheckCircle, XCircle, AlertCircle, Wallet, ArrowUpRight, ArrowDownLeft, CreditCard, RefreshCw, Pencil, Save, Upload, FileCheck, FileX, Shield } from 'lucide-react';
+import { Car, Calendar, DollarSign, Star, Mail, Phone, MapPin, ChevronRight, Clock, CheckCircle, XCircle, AlertCircle, Wallet, ArrowUpRight, ArrowDownLeft, CreditCard, RefreshCw, Pencil, Save, Upload, FileCheck, FileX, Shield, User } from 'lucide-react';
 
 export default function DashboardPage() {
   const navigate = useNavigate();
@@ -30,6 +30,10 @@ export default function DashboardPage() {
   const [uploadingCitizenship, setUploadingCitizenship] = useState(false);
   const [citizenshipError, setCitizenshipError] = useState('');
   const [citizenshipSuccess, setCitizenshipSuccess] = useState('');
+  const [profilePictureFile, setProfilePictureFile] = useState(null);
+  const [uploadingProfilePicture, setUploadingProfilePicture] = useState(false);
+  const [profilePictureError, setProfilePictureError] = useState('');
+  const [profilePictureSuccess, setProfilePictureSuccess] = useState('');
 
   // Fetch real bookings from API
   useEffect(() => {
@@ -241,6 +245,92 @@ export default function DashboardPage() {
     }
   };
 
+  const handleProfilePictureChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file size (5MB max)
+      if (file.size > 5 * 1024 * 1024) {
+        setProfilePictureError('File size must be less than 5MB');
+        return;
+      }
+      // Validate file type
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+      if (!allowedTypes.includes(file.type)) {
+        setProfilePictureError('Only JPG and PNG image files are allowed');
+        return;
+      }
+      setProfilePictureError('');
+      // Immediately upload when file is selected
+      handleProfilePictureUpload(file);
+    }
+  };
+
+  const handleProfilePictureUpload = async (file) => {
+    setUploadingProfilePicture(true);
+    setProfilePictureError('');
+    setProfilePictureSuccess('');
+
+    try {
+      // Upload to Cloudinary first
+      const CLOUD_NAME = process.env.REACT_APP_CLOUDINARY_CLOUD_NAME;
+      const UPLOAD_PRESET = process.env.REACT_APP_CLOUDINARY_UPLOAD_PRESET;
+
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', UPLOAD_PRESET);
+      formData.append('folder', 'profile_pictures');
+
+      const cloudinaryRes = await fetch(
+        `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
+        {
+          method: 'POST',
+          body: formData,
+        }
+      );
+
+      const cloudinaryData = await cloudinaryRes.json();
+
+      if (cloudinaryData.error) {
+        throw new Error(cloudinaryData.error.message);
+      }
+
+      const pictureUrl = cloudinaryData.secure_url;
+
+      // Now send the URL to backend
+      const token = localStorage.getItem('token');
+      const res = await axios.post('http://localhost:5000/api/auth/upload-profile-picture', 
+        { pictureUrl },
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      setProfilePictureSuccess('Profile picture updated successfully!');
+      setProfilePictureFile(null);
+      
+      // Update user context
+      if (res.data?.user) {
+        updateUser({
+          picture: res.data.user.picture
+        });
+      }
+
+      // Clear success message after 3 seconds
+      setTimeout(() => {
+        setProfilePictureSuccess('');
+      }, 3000);
+
+    } catch (err) {
+      console.error('Profile picture upload error:', err);
+      setProfilePictureError(err.response?.data?.message || err.message || 'Failed to upload profile picture');
+    } finally {
+      setUploadingProfilePicture(false);
+    }
+  };
+
   const handleCitizenshipUpload = async () => {
     if (!citizenshipFile) {
       setCitizenshipError('Please select a file first');
@@ -333,12 +423,39 @@ export default function DashboardPage() {
         <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl shadow-xl p-6 mb-8 text-white">
           <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
             {/* Profile Picture */}
-            <div className="relative">
+            <div className="relative group">
               <img
                 src={user?.picture}
                 alt={user?.name}
                 className="w-28 h-28 rounded-full border-4 border-white shadow-lg object-cover"
               />
+              {/* Upload overlay with camera icon */}
+              <label 
+                htmlFor="profile-picture-input"
+                className={`absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity ${
+                  uploadingProfilePicture ? 'opacity-100' : ''
+                }`}
+              >
+                {uploadingProfilePicture ? (
+                  <div className="animate-spin rounded-full h-8 w-8 border-3 border-white border-t-transparent"></div>
+                ) : (
+                  <Upload className="w-8 h-8 text-white" />
+                )}
+              </label>
+              <input
+                id="profile-picture-input"
+                type="file"
+                accept="image/jpeg,image/jpg,image/png"
+                onChange={handleProfilePictureChange}
+                disabled={uploadingProfilePicture}
+                className="hidden"
+              />
+              {/* Last updated indicator */}
+              {user?.profilePictureUpdatedAt && (
+                <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white text-xs px-2 py-0.5 rounded-full whitespace-nowrap">
+                  Custom
+                </div>
+              )}
             </div>
             
             {/* User Info */}
@@ -365,6 +482,24 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
+
+        {/* Profile Picture Upload Feedback */}
+        {profilePictureError && (
+          <div className="max-w-7xl mx-auto mb-6">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-3">
+              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
+              <p className="text-sm text-red-700">{profilePictureError}</p>
+            </div>
+          </div>
+        )}
+        {profilePictureSuccess && (
+          <div className="max-w-7xl mx-auto mb-6">
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-3">
+              <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+              <p className="text-sm text-green-700">{profilePictureSuccess}</p>
+            </div>
+          </div>
+        )}
 
         {/* Navigation Tabs */}
         <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
@@ -564,6 +699,94 @@ export default function DashboardPage() {
                 ) : (
                   <div className="px-4 py-3 bg-gray-50 rounded-lg text-gray-900">{user?.city || 'Not provided'}</div>
                 )}
+              </div>
+            </div>
+
+            {/* Profile Picture Section */}
+            <div className="mt-8 bg-white rounded-xl shadow-md p-6 border-2 border-purple-100">
+              <div className="flex items-center gap-3 mb-4">
+                <User className="w-6 h-6 text-purple-600" />
+                <h2 className="text-xl font-bold text-gray-900">Profile Picture</h2>
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-start gap-6">
+                <div className="relative group">
+                  <img
+                    src={user?.picture}
+                    alt="Profile"
+                    className="w-32 h-32 rounded-full border-4 border-purple-200 shadow-lg object-cover"
+                  />
+                  <label 
+                    htmlFor="profile-picture-input-settings"
+                    className={`absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity ${
+                      uploadingProfilePicture ? 'opacity-100' : ''
+                    }`}
+                  >
+                    {uploadingProfilePicture ? (
+                      <div className="animate-spin rounded-full h-8 w-8 border-3 border-white border-t-transparent"></div>
+                    ) : (
+                      <Upload className="w-8 h-8 text-white" />
+                    )}
+                  </label>
+                  <input
+                    id="profile-picture-input-settings"
+                    type="file"
+                    accept="image/jpeg,image/jpg,image/png"
+                    onChange={handleProfilePictureChange}
+                    disabled={uploadingProfilePicture}
+                    className="hidden"
+                  />
+                </div>
+
+                <div className="flex-1">
+                  <p className="text-sm text-gray-600 mb-3">
+                    Upload a custom profile picture. Maximum size: 5MB. Supported formats: JPG, PNG.
+                  </p>
+                  
+                  {user?.profilePictureUpdatedAt && (
+                    <div className="mb-3 px-3 py-2 bg-purple-50 border border-purple-200 rounded-lg">
+                      <p className="text-sm text-purple-800">
+                        <strong>Custom picture uploaded:</strong> {new Date(user.profilePictureUpdatedAt).toLocaleDateString('en-US', { 
+                          month: 'short', 
+                          day: 'numeric', 
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </p>
+                    </div>
+                  )}
+
+                  {user?.originalPicture && user?.profilePictureUpdatedAt && (
+                    <button
+                      onClick={async () => {
+                        if (window.confirm('Revert to your original Google profile picture?')) {
+                          try {
+                            const token = localStorage.getItem('token');
+                            const res = await axios.post('http://localhost:5000/api/auth/upload-profile-picture',
+                              { pictureUrl: user.originalPicture },
+                              { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } }
+                            );
+                            if (res.data?.user) {
+                              updateUser({ 
+                                picture: res.data.user.picture,
+                                profilePictureUpdatedAt: null 
+                              });
+                              setProfilePictureSuccess('Profile picture reverted to original');
+                              setTimeout(() => setProfilePictureSuccess(''), 3000);
+                            }
+                          } catch (err) {
+                            setProfilePictureError('Failed to revert profile picture');
+                          }
+                        }
+                      }}
+                      className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-purple-700 bg-purple-50 border border-purple-300 rounded-lg hover:bg-purple-100 transition-colors"
+                    >
+                      <RefreshCw className="w-4 h-4" />
+                      Revert to Original Google Picture
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
 

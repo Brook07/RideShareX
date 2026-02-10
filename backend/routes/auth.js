@@ -65,6 +65,8 @@ router.post('/google-login', async (req, res) => {
           email: user.email,
           name: user.name,
           picture: user.picture,
+          originalPicture: user.originalPicture,
+          profilePictureUpdatedAt: user.profilePictureUpdatedAt,
           phone: user.phone,
           address: user.address,
           city: user.city,
@@ -85,6 +87,7 @@ router.post('/google-login', async (req, res) => {
         email,
         name,
         picture,
+        originalPicture: picture,
         isProfileComplete: false,
         role: 'user',
         hasListedVehicles: false
@@ -106,6 +109,8 @@ router.post('/google-login', async (req, res) => {
           email: user.email,
           name: user.name,
           picture: user.picture,
+          originalPicture: user.originalPicture,
+          profilePictureUpdatedAt: user.profilePictureUpdatedAt,
           isProfileComplete: false,
           role: 'user',
           hasListedVehicles: false,
@@ -157,6 +162,8 @@ router.post('/complete-profile', authMiddleware, async (req, res) => {
         email: user.email,
         name: user.name,
         picture: user.picture,
+        originalPicture: user.originalPicture,
+        profilePictureUpdatedAt: user.profilePictureUpdatedAt,
         phone: user.phone,
         address: user.address,
         city: user.city,
@@ -193,6 +200,8 @@ router.get('/me', authMiddleware, async (req, res) => {
         email: user.email,
         name: user.name,
         picture: user.picture,
+        originalPicture: user.originalPicture,
+        profilePictureUpdatedAt: user.profilePictureUpdatedAt,
         phone: user.phone,
         address: user.address,
         city: user.city,
@@ -244,6 +253,8 @@ router.patch('/profile', authMiddleware, async (req, res) => {
         email: user.email,
         name: user.name,
         picture: user.picture,
+        originalPicture: user.originalPicture,
+        profilePictureUpdatedAt: user.profilePictureUpdatedAt,
         phone: user.phone,
         isVerified: user.isVerified,
         verificationStatus: user.verificationStatus,
@@ -260,6 +271,61 @@ router.patch('/profile', authMiddleware, async (req, res) => {
     });
   } catch (error) {
     console.error('Update profile error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// @route   POST /api/auth/upload-profile-picture
+// @desc    Upload profile picture (Cloudinary)
+// @access  Private
+router.post('/upload-profile-picture', authMiddleware, async (req, res) => {
+  try {
+    const { pictureUrl } = req.body;
+
+    if (!pictureUrl) {
+      return res.status(400).json({ message: 'Picture URL is required' });
+    }
+
+    const user = await User.findById(req.userId);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Store original picture if this is first custom upload
+    if (!user.originalPicture) {
+      user.originalPicture = user.picture;
+    }
+
+    // Update user with new profile picture URL from Cloudinary
+    user.picture = pictureUrl;
+    user.profilePictureUpdatedAt = new Date();
+    await user.save();
+
+    res.json({
+      message: 'Profile picture updated successfully',
+      user: {
+        id: user._id,
+        googleId: user.googleId,
+        email: user.email,
+        name: user.name,
+        picture: user.picture,
+        originalPicture: user.originalPicture,
+        profilePictureUpdatedAt: user.profilePictureUpdatedAt,
+        phone: user.phone,
+        address: user.address,
+        city: user.city,
+        role: user.role,
+        hasListedVehicles: user.hasListedVehicles,
+        isVerified: user.isVerified,
+        verificationStatus: user.verificationStatus,
+        citizenshipPhoto: user.citizenshipPhoto,
+        isProfileComplete: user.isProfileComplete,
+        walletBalance: user.walletBalance || 10000
+      }
+    });
+  } catch (error) {
+    console.error('Upload profile picture error:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
@@ -285,6 +351,7 @@ router.post('/upload-citizenship', authMiddleware, async (req, res) => {
     user.citizenshipPhoto = citizenshipUrl;
     user.verificationStatus = 'PENDING';
     user.isVerified = false;
+    await user.save();
 
     res.json({
       message: 'Citizenship photo uploaded successfully. Awaiting admin verification.',

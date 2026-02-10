@@ -202,6 +202,21 @@ On Your Network:  http://192.168.x.x:3000
 ---
 
 ## 🎯 Quick Commands Summary
+
+### **Option 1: Run Both Servers Simultaneously (Recommended)**
+```bash
+# From project root - Install concurrently first
+npm install
+
+# Start both servers at once
+npm run dev
+
+# OR start individually
+npm run start:backend   # Backend only
+npm run start:frontend  # Frontend only
+```
+
+### **Option 2: Run Servers Separately (Manual)**
 ```bash
 # ============ BACKEND ============
 cd backend
@@ -209,12 +224,62 @@ npm install
 # Create and configure .env file
 npm run dev
 
-# ============ FRONTEND ============
+# ============ FRONTEND ============ (New terminal)
 cd frontend
 npm install
 # Create and configure .env file
 npm start
 ```
+
+### **Initial Setup**
+```bash
+# Install all dependencies (backend + frontend) at once
+npm run install:all
+
+# Or install separately
+npm run install:backend
+npm run install:frontend
+```
+
+## 🐛 Common Issues & Solutions
+
+### **Issue: "Cannot find module" Error**
+**Cause:** Running `node server.js` from wrong directory  
+**Solution:** Always run from the correct directory:
+```bash
+# ❌ Wrong (from project root)
+node server.js
+
+# ✅ Correct
+cd backend
+node server.js
+
+# OR use npm scripts (works from anywhere)
+npm run start:backend
+```
+
+### **Issue: "Port 3000 is already in use"**
+**Cause:** Previous React dev server still running  
+**Solution:**
+```powershell
+# Windows PowerShell - Kill process on port 3000
+Get-Process -Id (Get-NetTCPConnection -LocalPort 3000).OwningProcess | Stop-Process -Force
+
+# OR find and kill manually
+netstat -ano | findstr :3000
+taskkill /PID <PID_NUMBER> /F
+
+# OR choose different port when prompted by React
+# Press 'Y' when asked "Would you like to run on another port?"
+```
+
+### **Issue: Backend crashes on startup**
+**Cause:** Missing environment variables or MongoDB connection  
+**Solution:**
+1. Verify `.env` file exists in `backend/` directory
+2. Check MongoDB URI is correct
+3. Ensure MongoDB Atlas IP whitelist includes your IP
+4. Check terminal output for specific error messages
 
 ## 📋 Project Structure
 ```
