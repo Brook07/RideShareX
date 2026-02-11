@@ -55,19 +55,6 @@ const vehicleImages = [
     return () => clearInterval(interval);
   }, [vehicleImages.length]);
 
-  // Manual navigation
-  const goToPrevious = () => {
-    setCurrentImageIndex((prevIndex) => 
-      prevIndex === 0 ? vehicleImages.length - 1 : prevIndex - 1
-    );
-  };
-
-  const goToNext = () => {
-    setCurrentImageIndex((prevIndex) => 
-      prevIndex === vehicleImages.length - 1 ? 0 : prevIndex + 1
-    );
-  };
-
   const goToSlide = (index) => {
     setCurrentImageIndex(index);
   };

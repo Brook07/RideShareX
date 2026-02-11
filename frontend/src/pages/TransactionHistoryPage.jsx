@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Navbar from '../components/common/Navbar';
-import { Wallet, ArrowUpRight, ArrowDownLeft, Calendar, CreditCard, CheckCircle, XCircle, Loader, RefreshCw, Download, Trash2 } from 'lucide-react';
+import { Wallet, ArrowUpRight, ArrowDownLeft, Calendar, CreditCard, CheckCircle, XCircle, Loader, RefreshCw, Trash2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export default function TransactionHistoryPage() {

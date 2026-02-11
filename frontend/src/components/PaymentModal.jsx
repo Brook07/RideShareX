@@ -1,7 +1,7 @@
 // frontend/src/components/PaymentModal.jsx - CLEANED VERSION
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, CreditCard, Banknote, CheckCircle, XCircle, Loader, Phone, MapPin, Mail, Calendar } from 'lucide-react';
+import { X, CreditCard, Banknote, CheckCircle, XCircle, Loader, MapPin, Calendar } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const PaymentModal = ({ booking, isOpen, onClose, onPaymentSuccess }) => {

@@ -9,7 +9,6 @@ import {
   Users,
   Fuel,
   Settings,
-  Search,
   Star
 } from "lucide-react";
 
@@ -20,7 +19,7 @@ export default function VehiclesPage() {
   const [vehicles, setVehicles] = useState([]);
   const [recommendations, setRecommendations] = useState([]);
   const [loadingRecommendations, setLoadingRecommendations] = useState(false);
-  const [searchParams, setSearchParams] = useState(location.state || {});
+  const [searchParams] = useState(location.state || {});
   const [sortBy, setSortBy] = useState('recommended');
   const [searchLocation, setSearchLocation] = useState(location.state?.location || '');
   const [searchVehicleType, setSearchVehicleType] = useState(location.state?.vehicleType || 'all');
