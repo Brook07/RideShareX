@@ -8,7 +8,7 @@ import { Car, Calendar, DollarSign, Star, Mail, Phone, MapPin, ChevronRight, Clo
 export default function DashboardPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, updateUser } = useAuth();
+  const { user, updateUser, refreshUser } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
   const [bookings, setBookings] = useState([]);
   const [transactions, setTransactions] = useState([]);
@@ -40,10 +40,12 @@ export default function DashboardPage() {
     fetchBookings();
   }, []);
 
-  // Fetch transactions when tab changes
+  // Fetch transactions and refresh user data when tab changes
   useEffect(() => {
     if (activeTab === 'transactions') {
       fetchTransactions();
+      // Refresh user balance when viewing transactions
+      refreshUser().catch(err => console.error('Error refreshing user:', err));
     }
   }, [activeTab]);
 
@@ -71,9 +73,11 @@ export default function DashboardPage() {
     if (location.state?.paymentSummary) {
       setPaymentSummaryBanner(location.state.paymentSummary);
       setActiveTab('transactions');
+      // Refresh user balance after payment
+      refreshUser().catch(err => console.error('Error refreshing user:', err));
       navigate(location.pathname + location.search, { replace: true });
     }
-  }, [location.state, navigate, location.pathname, location.search]);
+  }, [location.state, navigate, location.pathname, location.search, refreshUser]);
 
   const fetchBookings = async () => {
     try {
@@ -87,7 +91,7 @@ export default function DashboardPage() {
       
       // Calculate stats
       const total = userBookings.length;
-      const active = userBookings.filter(b => b.status === 'CONFIRMED').length;
+      const active = userBookings.filter(b => b.status === 'CONFIRMED' || b.status === 'PENDING').length;
       const completed = userBookings.filter(b => b.status === 'COMPLETED').length;
       const totalSpent = userBookings
         .filter(b => b.status === 'CONFIRMED' || b.status === 'COMPLETED')
@@ -408,7 +412,7 @@ export default function DashboardPage() {
   };
 
   const statsData = [
-    { icon: Wallet, label: 'Wallet Balance', value: `NPR ${(user?.walletBalance || 10000).toLocaleString()}`, color: 'indigo' },
+    { icon: Wallet, label: 'Wallet Balance', value: `NPR ${(user?.walletBalance ?? 100000).toLocaleString()}`, color: 'indigo' },
     { icon: Car, label: 'Total Bookings', value: stats.totalBookings, color: 'blue' },
     { icon: Calendar, label: 'Active Rentals', value: stats.activeRentals, color: 'green' },
     { icon: DollarSign, label: 'Total Spent', value: `NPR ${stats.totalSpent.toLocaleString()}`, color: 'purple' }
@@ -950,7 +954,7 @@ export default function DashboardPage() {
               <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl shadow-lg p-6 text-white">
                 <Wallet className="w-8 h-8 mb-3 opacity-90" />
                 <p className="text-sm opacity-90 mb-1">Current Balance</p>
-                <p className="text-3xl font-bold">NPR {(user?.walletBalance || 0).toLocaleString()}</p>
+                <p className="text-3xl font-bold">NPR {(user?.walletBalance ?? 100000).toLocaleString()}</p>
               </div>
 
               <div className="bg-white rounded-2xl shadow-md p-6 border border-green-100">

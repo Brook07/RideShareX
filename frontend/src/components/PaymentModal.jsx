@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext';
 
 const PaymentModal = ({ booking, isOpen, onClose, onPaymentSuccess }) => {
   const navigate = useNavigate();
-  const { user, updateUser } = useAuth();
+  const { user, updateUser, refreshUser } = useAuth();
   const [selectedMethod, setSelectedMethod] = useState('demo-wallet');
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState(null);
@@ -65,6 +65,9 @@ const PaymentModal = ({ booking, isOpen, onClose, onPaymentSuccess }) => {
       // Update local wallet balance from backend response
       if (selectedMethod === 'demo-wallet' && data.newBalance !== undefined) {
         updateUser({ walletBalance: data.newBalance });
+      } else if (selectedMethod === 'demo-wallet') {
+        // Fallback: refresh full user data from server
+        await refreshUser();
       }
 
       setPaymentStatus('success');
@@ -81,7 +84,7 @@ const PaymentModal = ({ booking, isOpen, onClose, onPaymentSuccess }) => {
         onPaymentSuccess(payload);
         onClose();
         setPaymentStatus(null);
-        navigate('/transactions');
+        navigate('/home?tab=transactions');
       }, 1500);
     } catch (error) {
       console.error('Payment error:', error);

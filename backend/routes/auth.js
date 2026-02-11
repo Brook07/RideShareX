@@ -73,6 +73,7 @@ router.post('/google-login', async (req, res) => {
           role: user.role,
           hasListedVehicles: user.hasListedVehicles,
           isProfileComplete: user.isProfileComplete,
+          walletBalance: user.walletBalance,
           isVerified: user.isVerified,
           verificationStatus: user.verificationStatus,
           citizenshipPhoto: user.citizenshipPhoto
@@ -114,7 +115,7 @@ router.post('/google-login', async (req, res) => {
           isProfileComplete: false,
           role: 'user',
           hasListedVehicles: false,
-          walletBalance: 10000,
+          walletBalance: user.walletBalance,
           isVerified: false,
           verificationStatus: 'NOT_SUBMITTED'
         }
@@ -173,7 +174,7 @@ router.post('/complete-profile', authMiddleware, async (req, res) => {
         verificationStatus: user.verificationStatus,
         citizenshipPhoto: user.citizenshipPhoto,
         isProfileComplete: user.isProfileComplete,
-        walletBalance: user.walletBalance || 10000
+        walletBalance: user.walletBalance
       }
     });
   } catch (error) {
@@ -211,7 +212,7 @@ router.get('/me', authMiddleware, async (req, res) => {
         verificationStatus: user.verificationStatus,
         citizenshipPhoto: user.citizenshipPhoto,
         isProfileComplete: user.isProfileComplete,
-        walletBalance: user.walletBalance || 10000,
+        walletBalance: user.walletBalance,
         createdAt: user.createdAt,
         lastLogin: user.lastLogin
       }
@@ -264,7 +265,7 @@ router.patch('/profile', authMiddleware, async (req, res) => {
         role: user.role,
         hasListedVehicles: user.hasListedVehicles,
         isProfileComplete: user.isProfileComplete,
-        walletBalance: user.walletBalance || 10000,
+        walletBalance: user.walletBalance,
         createdAt: user.createdAt,
         lastLogin: user.lastLogin
       }
@@ -321,7 +322,7 @@ router.post('/upload-profile-picture', authMiddleware, async (req, res) => {
         verificationStatus: user.verificationStatus,
         citizenshipPhoto: user.citizenshipPhoto,
         isProfileComplete: user.isProfileComplete,
-        walletBalance: user.walletBalance || 10000
+        walletBalance: user.walletBalance
       }
     });
   } catch (error) {
