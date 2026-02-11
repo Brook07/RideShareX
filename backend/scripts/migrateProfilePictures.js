@@ -11,14 +11,14 @@ async function migrateProfilePictures() {
   try {
     // Connect to MongoDB
     await mongoose.connect(process.env.MONGO_URI);
-    console.log('✅ Connected to MongoDB');
+    console.log('Connected to MongoDB');
 
     // Find all users who don't have originalPicture set
     const usersWithoutOriginalPicture = await User.find({
       originalPicture: { $in: [null, undefined] }
     });
 
-    console.log(`📋 Found ${usersWithoutOriginalPicture.length} users without originalPicture field`);
+    console.log(`Found ${usersWithoutOriginalPicture.length} users without originalPicture field`);
 
     let updated = 0;
 
@@ -27,14 +27,14 @@ async function migrateProfilePictures() {
       user.originalPicture = user.picture;
       await user.save();
       updated++;
-      console.log(`✅ Updated user: ${user.email}`);
+      console.log(`Updated user: ${user.email}`);
     }
 
     console.log(`\n🎉 Migration completed! Updated ${updated} users.`);
     console.log('All users now have originalPicture field set to their current profile picture.');
 
   } catch (error) {
-    console.error('❌ Migration failed:', error);
+    console.error('Migration failed:', error);
   } finally {
     // Close connection
     await mongoose.connection.close();
