@@ -48,7 +48,7 @@ export default function MyBookingsPage() {
 
       console.log("Fetching bookings with token:", token.substring(0, 20) + "...");
       
-      const res = await axios.get("http://localhost:5000/api/bookings/user", {
+      const res = await axios.get("/api/bookings/user", {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -76,7 +76,7 @@ export default function MyBookingsPage() {
     setCancelling(bookingId);
     try {
       const token = localStorage.getItem("token");
-      await axios.patch(`http://localhost:5000/api/bookings/${bookingId}/cancel`, {}, {
+      await axios.patch(`/api/bookings/${bookingId}/cancel`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchBookings();

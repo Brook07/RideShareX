@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { X, CreditCard, Banknote, CheckCircle, XCircle, Loader, MapPin, Calendar } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { getApiUrl } from '../config/api';
 
 const PaymentModal = ({ booking, isOpen, onClose, onPaymentSuccess }) => {
   const navigate = useNavigate();
@@ -40,7 +41,7 @@ const PaymentModal = ({ booking, isOpen, onClose, onPaymentSuccess }) => {
     try {
       // Call backend API to process payment
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/payment/demo', {
+      const response = await fetch(getApiUrl('/api/payment/demo'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

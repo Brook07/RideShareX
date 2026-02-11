@@ -99,7 +99,8 @@ export default function AddVehiclePage() {
         }
       }
       
-      const res = await axios.post("http://localhost:5000/api/vehicles/add", {
+      const token = localStorage.getItem('token');
+      const res = await axios.post("/api/vehicles/add", {
         ...vehicleData,
         year: parseInt(vehicleData.year),
         seats: parseInt(vehicleData.seats),

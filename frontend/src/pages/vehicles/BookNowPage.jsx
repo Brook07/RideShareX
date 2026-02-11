@@ -61,7 +61,7 @@ export default function BookNowPage() {
       if (!vehicle) return;
       
       try {
-        const res = await axios.get("http://localhost:5000/api/vehicles");
+        const res = await axios.get("/api/vehicles");
         
         // Filter vehicles of the same type, excluding current vehicle and user's own vehicles
         const similar = res.data.vehicles
@@ -131,7 +131,7 @@ export default function BookNowPage() {
     try {
       const token = localStorage.getItem("token");
       
-      await axios.post("http://localhost:5000/api/bookings", {
+      await axios.post("/api/bookings", {
         vehicleId: vehicle.id,
         pickupDate,
         dropoffDate,

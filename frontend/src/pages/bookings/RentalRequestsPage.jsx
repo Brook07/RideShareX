@@ -25,7 +25,7 @@ export default function RentalRequestsPage() {
     const loadRequests = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get("http://localhost:5000/api/bookings/owner", {
+        const res = await axios.get("/api/bookings/owner", {
           headers: { Authorization: `Bearer ${token}` }
         });
         setRequests(res.data.bookings || []);
@@ -45,7 +45,7 @@ export default function RentalRequestsPage() {
   const fetchRequests = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get("http://localhost:5000/api/bookings/owner", {
+      const res = await axios.get("/api/bookings/owner", {
         headers: { Authorization: `Bearer ${token}` }
       });
       setRequests(res.data.bookings || []);
@@ -61,7 +61,7 @@ export default function RentalRequestsPage() {
     try {
       const token = localStorage.getItem("token");
       await axios.patch(
-        `http://localhost:5000/api/bookings/${bookingId}/status`,
+        `/api/bookings/${bookingId}/status`,
         { status, rejectionReason: reason },
         { headers: { Authorization: `Bearer ${token}` } }
       );

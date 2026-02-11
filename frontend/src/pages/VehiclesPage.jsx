@@ -26,7 +26,7 @@ export default function VehiclesPage() {
 useEffect(() => {
   const fetchVehicles = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/vehicles");
+      const res = await axios.get("/api/vehicles");
 
       const mappedVehicles = res.data.vehicles.map((v) => ({
         id: v._id,
@@ -71,7 +71,7 @@ useEffect(() => {
       if (!user || !user._id) return;
       
       try {
-        const res = await axios.get(`http://localhost:5000/api/recommendations/${user._id}?limit=6`);
+        const res = await axios.get(`/api/recommendations/${user._id}?limit=6`);
         
         if (res.data.recommendations) {
           const mappedRecs = res.data.recommendations.map((rec) => ({

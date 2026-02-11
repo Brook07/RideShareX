@@ -32,7 +32,7 @@ export default function ManageVehiclesPage() {
   const fetchUserVehicles = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get("http://localhost:5000/api/vehicles/my-vehicles", {
+      const res = await axios.get("/api/vehicles/my-vehicles", {
         headers: { Authorization: `Bearer ${token}` }
       });
       setVehicles(res.data.vehicles || []);
@@ -46,7 +46,7 @@ export default function ManageVehiclesPage() {
   const fetchActiveBookings = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get("http://localhost:5000/api/bookings/rental-requests", {
+      const res = await axios.get("/api/bookings/rental-requests", {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -82,7 +82,7 @@ export default function ManageVehiclesPage() {
     try {
       const token = localStorage.getItem("token");
       await axios.patch(
-        `http://localhost:5000/api/vehicles/${vehicleId}/status`,
+        `/api/vehicles/${vehicleId}/status`,
         { status: newStatus },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -111,7 +111,7 @@ export default function ManageVehiclesPage() {
     setActionLoading(vehicleId);
     try {
       const token = localStorage.getItem("token");
-      await axios.delete(`http://localhost:5000/api/vehicles/${vehicleId}`, {
+      await axios.delete(`/api/vehicles/${vehicleId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       

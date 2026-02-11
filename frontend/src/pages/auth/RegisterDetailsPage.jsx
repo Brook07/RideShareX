@@ -45,7 +45,7 @@ export default function RegisterDetailsPage() {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.post('http://localhost:5000/api/auth/complete-profile', formData, {
+      const response = await axios.post('/api/auth/complete-profile', formData, {
         headers: { Authorization: `Bearer ${token}` }
       });
       

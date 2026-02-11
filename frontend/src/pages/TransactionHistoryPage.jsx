@@ -21,7 +21,7 @@ export default function TransactionHistoryPage() {
   const fetchTransactions = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:5000/api/payment/user/history', {
+      const res = await axios.get('/api/payment/user/history', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setTransactions(res.data.payments || []);
@@ -36,7 +36,7 @@ export default function TransactionHistoryPage() {
     try {
       setClearing(true);
       const token = localStorage.getItem('token');
-      await axios.delete('http://localhost:5000/api/payment/user/clear-history', {
+      await axios.delete('/api/payment/user/clear-history', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setTransactions([]);

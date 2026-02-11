@@ -26,7 +26,7 @@ export default function AdminVerificationPage() {
   const fetchPendingUsers = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:5000/api/auth/pending-verifications', {
+      const res = await axios.get('/api/auth/pending-verifications', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setPendingUsers(res.data.users || []);
@@ -47,7 +47,7 @@ export default function AdminVerificationPage() {
     try {
       const token = localStorage.getItem('token');
       await axios.post(
-        `http://localhost:5000/api/auth/verify-user/${userId}`,
+        `/api/auth/verify-user/${userId}`,
         { action: 'APPROVE' },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -69,7 +69,7 @@ export default function AdminVerificationPage() {
     try {
       const token = localStorage.getItem('token');
       await axios.post(
-        `http://localhost:5000/api/auth/verify-user/${userId}`,
+        `/api/auth/verify-user/${userId}`,
         { action: 'REJECT' },
         { headers: { Authorization: `Bearer ${token}` } }
       );

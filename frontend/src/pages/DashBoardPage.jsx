@@ -82,7 +82,7 @@ export default function DashboardPage() {
   const fetchBookings = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:5000/api/bookings/user', {
+      const res = await axios.get('/api/bookings/user', {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -142,7 +142,7 @@ export default function DashboardPage() {
     setTransactionsLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:5000/api/payment/user/history', {
+      const res = await axios.get('/api/payment/user/history', {
         headers: { Authorization: `Bearer ${token}` }
       });
       const serverTransactions = res.data.payments || [];
@@ -302,7 +302,7 @@ export default function DashboardPage() {
 
       // Now send the URL to backend
       const token = localStorage.getItem('token');
-      const res = await axios.post('http://localhost:5000/api/auth/upload-profile-picture', 
+      const res = await axios.post('/api/auth/upload-profile-picture', 
         { pictureUrl },
         {
           headers: {
@@ -372,7 +372,7 @@ export default function DashboardPage() {
 
       // Now send the URL to backend
       const token = localStorage.getItem('token');
-      const res = await axios.post('http://localhost:5000/api/auth/upload-citizenship', 
+      const res = await axios.post('/api/auth/upload-citizenship', 
         { citizenshipUrl },
         {
           headers: {
@@ -395,7 +395,7 @@ export default function DashboardPage() {
       }
 
       // Refresh user data
-      const userRes = await axios.get('http://localhost:5000/api/auth/me', {
+      const userRes = await axios.get('/api/auth/me', {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (userRes.data?.user) {
@@ -766,7 +766,7 @@ export default function DashboardPage() {
                         if (window.confirm('Revert to your original Google profile picture?')) {
                           try {
                             const token = localStorage.getItem('token');
-                            const res = await axios.post('http://localhost:5000/api/auth/upload-profile-picture',
+                            const res = await axios.post('/api/auth/upload-profile-picture',
                               { pictureUrl: user.originalPicture },
                               { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } }
                             );

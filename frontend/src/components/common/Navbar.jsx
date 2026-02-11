@@ -25,12 +25,12 @@ export default function Navbar() {
       const token = localStorage.getItem('token');
       
       // Fetch rental requests (for hosts)
-      const ownerRes = await axios.get('http://localhost:5000/api/bookings/owner', {
+      const ownerRes = await axios.get('/api/bookings/owner', {
         headers: { Authorization: `Bearer ${token}` }
       }).catch(() => ({ data: { bookings: [] } }));
       
       // Fetch user's bookings (for status updates)
-      const userRes = await axios.get('http://localhost:5000/api/bookings/user', {
+      const userRes = await axios.get('/api/bookings/user', {
         headers: { Authorization: `Bearer ${token}` }
       }).catch(() => ({ data: { bookings: [] } }));
 
