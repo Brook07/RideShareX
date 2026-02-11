@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/common/Navbar';
 import axios from 'axios';
-import { Shield, FileCheck, FileX, Clock, AlertCircle, CheckCircle, XCircle, User, Mail, Phone, MapPin, ExternalLink } from 'lucide-react';
+import { Shield, Clock, CheckCircle, XCircle, Mail, Phone, MapPin } from 'lucide-react';
 
 export default function AdminVerificationPage() {
   const navigate = useNavigate();
@@ -20,6 +20,7 @@ export default function AdminVerificationPage() {
       return;
     }
     fetchPendingUsers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, navigate]);
 
   const fetchPendingUsers = async () => {

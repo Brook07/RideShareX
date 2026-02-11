@@ -101,6 +101,7 @@ export default function Navbar() {
     fetchNotifications();
     const interval = setInterval(fetchNotifications, 60000); // Refresh every minute
     return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   // Close notification dropdown when clicking outside

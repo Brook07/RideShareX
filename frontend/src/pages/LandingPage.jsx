@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/common/Navbar';
 import SearchBar from '../components/common/SearchBar';
-import { Car, Shield, DollarSign, Clock, Star, Users, ChevronLeft, ChevronRight, ThumbsUp } from 'lucide-react';
+import { Car, DollarSign, Clock, ThumbsUp } from 'lucide-react';
 
 export default function LandingPage() {
   const navigate = useNavigate();

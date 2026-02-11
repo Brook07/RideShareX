@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/common/Navbar';
 import axios from 'axios';
-import { Car, Calendar, DollarSign, Star, Mail, Phone, MapPin, ChevronRight, Clock, CheckCircle, XCircle, AlertCircle, Wallet, ArrowUpRight, ArrowDownLeft, CreditCard, RefreshCw, Pencil, Save, Upload, FileCheck, FileX, Shield, User } from 'lucide-react';
+import { Car, Calendar, DollarSign, Mail, Phone, MapPin, ChevronRight, Clock, CheckCircle, XCircle, AlertCircle, Wallet, ArrowUpRight, ArrowDownLeft, CreditCard, RefreshCw, Pencil, Save, Upload, FileCheck, FileX, Shield, User } from 'lucide-react';
 
 export default function DashboardPage() {
   const navigate = useNavigate();
@@ -30,7 +30,6 @@ export default function DashboardPage() {
   const [uploadingCitizenship, setUploadingCitizenship] = useState(false);
   const [citizenshipError, setCitizenshipError] = useState('');
   const [citizenshipSuccess, setCitizenshipSuccess] = useState('');
-  const [profilePictureFile, setProfilePictureFile] = useState(null);
   const [uploadingProfilePicture, setUploadingProfilePicture] = useState(false);
   const [profilePictureError, setProfilePictureError] = useState('');
   const [profilePictureSuccess, setProfilePictureSuccess] = useState('');
@@ -47,6 +46,7 @@ export default function DashboardPage() {
       // Refresh user balance when viewing transactions
       refreshUser().catch(err => console.error('Error refreshing user:', err));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab]);
 
   useEffect(() => {
@@ -313,7 +313,6 @@ export default function DashboardPage() {
       );
 
       setProfilePictureSuccess('Profile picture updated successfully!');
-      setProfilePictureFile(null);
       
       // Update user context
       if (res.data?.user) {

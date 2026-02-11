@@ -12,8 +12,7 @@ import {
   Loader,
   RefreshCw,
   Car,
-  Phone,
-  Mail
+  Phone
 } from "lucide-react";
 import PaymentModal from "../../components/PaymentModal";
 import Navbar from "../../components/common/Navbar";
