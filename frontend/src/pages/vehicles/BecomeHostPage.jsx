@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Settings, Car, ArrowLeft, Bell } from "lucide-react";
+import { Plus, Settings, ArrowLeft, Bell } from "lucide-react";
 import Navbar from "../../components/common/Navbar";
 
 export default function BecomeHostPage() {

@@ -3,7 +3,7 @@ import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/common/Navbar";
-import { Shield, AlertCircle } from "lucide-react";
+import { Shield } from "lucide-react";
 
 // 🔹 Cloudinary Configuration (from environment variables)
 const CLOUD_NAME = process.env.REACT_APP_CLOUDINARY_CLOUD_NAME;

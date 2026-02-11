@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
-import { Calendar, Users, Fuel, Settings, ArrowLeft, MessageSquare, CheckCircle, Clock, MapPin, Star, AlertCircle, Shield } from 'lucide-react';
+import { Calendar, Users, Fuel, Settings, ArrowLeft, CheckCircle, Clock, MapPin, Star, AlertCircle, Shield } from 'lucide-react';
 import Navbar from '../../components/common/Navbar';
 import { useAuth } from '../../context/AuthContext';
 
@@ -17,7 +17,6 @@ export default function BookNowPage() {
   const [dropoffDate, setDropoffDate] = useState('');
   const [totalDays, setTotalDays] = useState(1);
   const [totalPrice, setTotalPrice] = useState(0);
-  const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [bookingSuccess, setBookingSuccess] = useState(false);
   const [similarVehicles, setSimilarVehicles] = useState([]);
@@ -132,14 +131,13 @@ export default function BookNowPage() {
     try {
       const token = localStorage.getItem("token");
       
-      const res = await axios.post("http://localhost:5000/api/bookings", {
+      await axios.post("http://localhost:5000/api/bookings", {
         vehicleId: vehicle.id,
         pickupDate,
         dropoffDate,
         totalDays,
         pricePerDay,
-        totalPrice,
-        message
+        totalPrice
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });

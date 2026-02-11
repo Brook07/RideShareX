@@ -32,6 +32,7 @@ export default function MyBookingsPage() {
     // Auto-refresh every 2 minutes
     const interval = setInterval(fetchBookings, 120000);
     return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchBookings = async () => {

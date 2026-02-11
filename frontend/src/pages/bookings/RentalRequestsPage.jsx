@@ -3,18 +3,14 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Navbar from "../../components/common/Navbar";
 import {
-  Calendar,
   Clock,
-  User,
   Car,
   CheckCircle,
   XCircle,
   AlertCircle,
   Loader,
   RefreshCw,
-  MessageSquare,
-  Phone,
-  Mail
+  MessageSquare
 } from "lucide-react";
 
 export default function RentalRequestsPage() {
