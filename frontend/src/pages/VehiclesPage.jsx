@@ -18,7 +18,6 @@ export default function VehiclesPage() {
   const { user } = useAuth();
   const [vehicles, setVehicles] = useState([]);
   const [recommendations, setRecommendations] = useState([]);
-  const [loadingRecommendations, setLoadingRecommendations] = useState(false);
   const [searchParams] = useState(location.state || {});
   const [sortBy, setSortBy] = useState('recommended');
   const [searchLocation, setSearchLocation] = useState(location.state?.location || '');
@@ -71,7 +70,6 @@ useEffect(() => {
     const fetchRecommendations = async () => {
       if (!user || !user._id) return;
       
-      setLoadingRecommendations(true);
       try {
         const res = await axios.get(`http://localhost:5000/api/recommendations/${user._id}?limit=6`);
         
@@ -109,8 +107,6 @@ useEffect(() => {
       } catch (err) {
         console.log("Fetch recommendations error:", err);
         setRecommendations([]);
-      } finally {
-        setLoadingRecommendations(false);
       }
     };
 
