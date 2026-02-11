@@ -87,7 +87,7 @@ export default function AddVehiclePage() {
       setUploading(true);
       const token = localStorage.getItem("token");
       
-      // 🔹 Upload image to Cloudinary if file selected
+      // Upload image to Cloudinary if file selected
       let imageUrl = '/photos/default-car.jpg';
       if (imageFile) {
         try {
