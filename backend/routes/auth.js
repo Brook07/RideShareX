@@ -3,23 +3,6 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const authMiddleware = require('../middleware/auth');
-const multer = require('multer');
-
-// Configure multer for memory storage (for Cloudinary upload)
-const storage = multer.memoryStorage();
-const upload = multer({
-  storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
-  fileFilter: (req, file, cb) => {
-    const allowedTypes = /jpeg|jpg|png/;
-    const mimetype = allowedTypes.test(file.mimetype);
-    if (mimetype) {
-      cb(null, true);
-    } else {
-      cb(new Error('Only JPG and PNG image files are allowed'));
-    }
-  }
-});
 
 // Generate JWT Token
 const generateToken = (userId) => {
