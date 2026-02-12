@@ -604,7 +604,7 @@ export default function DashboardPage() {
               
               {bookings.length > 0 && (
                 <button
-                  onClick={() => navigate('/bookings')}
+                  onClick={() => navigate('/my-bookings')}
                   className="w-full mt-4 px-4 py-3 border-2 border-blue-600 text-blue-600 font-bold rounded-lg hover:bg-blue-50 transition-colors flex items-center justify-center gap-2"
                 >
                   View All Bookings
