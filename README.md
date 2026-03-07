@@ -18,6 +18,21 @@ The application is developed using the **MERN stack** (MongoDB, Express, React, 
 
 ---
 
+## 📊 Project Status
+
+✅ **MVP Complete** - All core features implemented and functional
+
+### Implementation Summary
+- **Authentication System**: Fully operational with Google OAuth & JWT
+- **User Verification**: Admin approval system for identity verification
+- **Vehicle Management**: Complete CRUD operations with image upload
+- **Booking Engine**: Request-based system with collision detection
+- **Payment System**: Demo wallet with transaction tracking
+- **Recommendation AI**: Behavior-based vehicle suggestions
+- **File Uploads**: Cloudinary integration for profile & vehicle images
+
+---
+
 ## ✨ Features
 
 ### 🔐 Authentication & Security
@@ -25,30 +40,64 @@ The application is developed using the **MERN stack** (MongoDB, Express, React, 
 - ✅ JWT-based authentication with 7-day token expiry
 - ✅ Protected routes and middleware
 - ✅ Secure password handling with bcrypt
+- ✅ Session management with auto-logout
 
 ### 👤 User Management
 - ✅ User registration with Google account
 - ✅ Profile completion for new users
 - ✅ Profile dashboard with user details
-- ✅ Role-based system (Renter/Owner)
+- ✅ Profile picture upload with Cloudinary
+- ✅ Role-based system (Renter/Owner/Admin)
+- ✅ Demo wallet balance system (Rs. 10,000 starting balance)
 
-### 🚘 Vehicle Management (Coming Soon)
-- 🔄 Vehicle listing with photos and descriptions
-- 🔄 Real-time availability tracking
-- 🔄 Search and filter vehicles by location
-- 🔄 Vehicle rating and review system
+### 🛡️ User Verification System
+- ✅ Citizenship document upload for identity verification
+- ✅ Admin verification panel for document approval/rejection
+- ✅ Verified user badge system
+- ✅ Restrict vehicle listing to verified users only
+- ✅ Multi-format support (JPEG, PNG, PDF)
 
-### 📅 Booking System (Coming Soon)
-- 🔄 Real-time booking functionality
-- 🔄 Booking history and management
-- 🔄 Calendar integration for availability
-- 🔄 Booking confirmation notifications
+### 🚘 Vehicle Management
+- ✅ Vehicle listing with photos and descriptions
+- ✅ Cloudinary integration for vehicle image storage
+- ✅ Support for multiple vehicle types (Car, Bike, Scooter)
+- ✅ Real-time availability tracking
+- ✅ Public vehicle marketplace
+- ✅ Owner's vehicle management dashboard
+- ✅ Edit and delete vehicle functionality
+- ✅ Vehicle rating system
+- ✅ Location-based vehicle browsing
 
-### 💳 Payment Integration (Coming Soon)
-- 🔄 Secure payment gateway integration
-- 🔄 Earnings dashboard for vehicle owners
-- 🔄 Transaction history
-- 🔄 Automated payment processing
+### 📅 Booking System
+- ✅ Real-time booking request functionality
+- ✅ Time-limited booking requests (5-minute expiration)
+- ✅ Owner acceptance/rejection workflow
+- ✅ Booking history for renters
+- ✅ Rental request management for vehicle owners
+- ✅ Automatic conflict detection (no overlapping bookings)
+- ✅ Booking status tracking (Pending, Confirmed, Cancelled, Completed)
+- ✅ Booking cancellation system
+
+### 💳 Payment Integration
+- ✅ Demo wallet payment system
+- ✅ Automatic wallet balance deduction
+- ✅ Money transfer between users (Renter → Owner)
+- ✅ Transaction history with detailed breakdowns
+- ✅ Payment snapshots with booking details
+- ✅ Refund system for cancelled bookings
+- ✅ Earnings dashboard for vehicle owners
+
+### 🤖 AI-Powered Recommendation System
+- ✅ Personalized vehicle recommendations
+- ✅ Machine learning-based scoring algorithm
+- ✅ User behavior analysis (booking history, preferences)
+- ✅ Multi-factor recommendation scoring:
+  - Vehicle type matching
+  - Location preference
+  - Price range compatibility
+  - Time slot analysis
+  - Recency and diversity scoring
+- ✅ Intelligent fallback for new users
 
 ---
 
@@ -70,6 +119,8 @@ The application is developed using the **MERN stack** (MongoDB, Express, React, 
 - **Mongoose** - ODM for MongoDB
 - **JSON Web Token (JWT)** - Authentication
 - **bcryptjs** - Password hashing
+- **Multer** - File upload middleware
+- **Cloudinary** - Image storage and management
 - **dotenv** - Environment variable management
 - **CORS** - Cross-origin resource sharing
 
@@ -171,10 +222,14 @@ Open `frontend/.env` and add:
 ```env
 REACT_APP_API_URL=http://localhost:5000
 REACT_APP_GOOGLE_CLIENT_ID=your_google_client_id.apps.googleusercontent.com
+REACT_APP_CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
+REACT_APP_CLOUDINARY_UPLOAD_PRESET=your_upload_preset
 ```
 
 **Replace:**
 - `REACT_APP_GOOGLE_CLIENT_ID` - Same Google Client ID as backend
+- `REACT_APP_CLOUDINARY_CLOUD_NAME` - Get from [Cloudinary Dashboard](https://cloudinary.com/)
+- `REACT_APP_CLOUDINARY_UPLOAD_PRESET` - Create an unsigned upload preset in Cloudinary
 
 ### **Step 7: Start Frontend Server**
 ```bash
@@ -281,22 +336,312 @@ taskkill /PID <PID_NUMBER> /F
 3. Ensure MongoDB Atlas IP whitelist includes your IP
 4. Check terminal output for specific error messages
 
+### **Issue: Image upload fails**
+**Cause:** Missing Cloudinary configuration  
+**Solution:**
+1. Verify Cloudinary credentials in `frontend/.env`
+2. Create an unsigned upload preset in Cloudinary dashboard:
+   - Settings → Upload → Add upload preset
+   - Set Mode to "Unsigned"
+   - Copy the preset name to `REACT_APP_CLOUDINARY_UPLOAD_PRESET`
+3. Check browser console for detailed error messages
+
+### **Issue: "User not verified" when adding vehicle**
+**Cause:** User hasn't completed citizenship verification  
+**Solution:**
+1. Upload citizenship document from Dashboard → Profile section
+2. Wait for admin approval (requires admin account)
+3. Admin can approve from Admin Verification Panel (`/admin/verify`)
+
+---
+
+## 🎯 Key Highlights
+
+### 🔐 Security Features
+- JWT-based authentication with automatic token refresh
+- Middleware-protected routes
+- Citizenship verification system
+- Admin role-based access control
+
+### 💰 Payment System
+- Demo wallet with Rs. 10,000 starting balance
+- Real-time balance updates
+- Automatic money transfer on booking confirmation
+- Complete refund system for cancellations
+- Detailed transaction history with booking snapshots
+
+### 🤖 Smart Recommendations
+- Analyzes up to 200 historical bookings
+- Multi-factor scoring algorithm (10 factors)
+- Considers: vehicle type, location, price, time slots, recency
+- Intelligent fallback for new users
+
+### 📸 Image Management
+- Cloudinary integration for scalable storage
+- Automatic image optimization
+- Support for profile pictures, vehicle images, and documents
+- Secure URL-based image delivery
+
+### ⏱️ Booking Intelligence
+- 5-minute automatic request expiration
+- Conflict detection (no overlapping bookings)
+- Owner approval workflow
+- Cancellation with automatic refunds
+
+---
+
 ## 📋 Project Structure
 ```
 ridesharex/
 ├── backend/
 │   ├── config/
+│   │   ├── db.js                    # MongoDB connection
+│   │   └── multer.js                # File upload configuration
 │   ├── middleware/
+│   │   ├── auth.js                  # JWT authentication
+│   │   └── verifyUser.js            # User verification check
 │   ├── models/
+│   │   ├── Booking.js               # Booking schema
+│   │   ├── Payment.js               # Payment transaction schema
+│   │   ├── User.js                  # User schema with wallet
+│   │   └── Vehicle.js               # Vehicle schema
+│   ├── controllers/
+│   │   ├── bookingController.js     # Booking logic
+│   │   ├── paymentController.js     # Payment processing
+│   │   ├── recommendationController.js  # AI recommendations
+│   │   └── vehicleController.js     # Vehicle CRUD operations
 │   ├── routes/
-│   ├── .env (create this)
-│   ├── server.js
+│   │   ├── auth.js                  # Authentication routes
+│   │   ├── booking.js               # Booking routes
+│   │   ├── payment.js               # Payment routes
+│   │   ├── recommendation.js        # Recommendation routes
+│   │   └── vehicle.js               # Vehicle routes
+│   ├── services/
+│   │   └── recommendationService.js # Recommendation algorithm
+│   ├── scripts/
+│   │   └── migrateUserVerification.js  # DB migration scripts
+│   ├── .env                         # Environment variables (create this)
+│   ├── server.js                    # Express server entry point
 │   └── package.json
 │
-└── frontend/
-    ├── src/
-    ├── public/
-    ├── .env (create this)
-    └── package.json
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── auth/                # Google login components
+│   │   │   ├── common/              # Navbar, modals, etc.
+│   │   │   └── PaymentModal.jsx     # Payment processing UI
+│   │   ├── pages/
+│   │   │   ├── auth/                # Login/signup pages
+│   │   │   ├── bookings/            # My bookings, rental requests
+│   │   │   ├── vehicles/            # Add/manage vehicles, book now
+│   │   │   ├── AdminVerificationPage.jsx  # Admin verification panel
+│   │   │   ├── DashBoardPage.jsx    # User dashboard & profile
+│   │   │   ├── TransactionHistoryPage.jsx # Payment history
+│   │   │   └── VehiclesPage.jsx     # Vehicle marketplace
+│   │   ├── context/
+│   │   │   └── AuthContext.jsx      # Global auth state
+│   │   ├── services/
+│   │   │   └── apiService.js        # API client
+│   │   ├── config/
+│   │   │   └── api.js               # Axios configuration
+│   │   └── App.jsx                  # Main app component
+│   ├── public/
+│   ├── .env                         # Environment variables (create this)
+│   └── package.json
+│
+└── documentation/
+    ├── VEHICLE_MANAGEMENT_SYSTEM.md
+    ├── BOOKING_AND_PAYMENT_SYSTEM.md
+    ├── RECOMMENDATION_SYSTEM.md
+    ├── BECOME_HOST_PAGE_DOCUMENTATION.md
+    └── api/
+        ├── API_ENDPOINTS_REFERENCE.md
+        └── API_WORKFLOW_GUIDE.md
 ```
 
+---
+
+## 📚 Documentation
+
+Comprehensive documentation is available in the `documentation/` folder:
+
+- **[API Endpoints Reference](documentation/api/API_ENDPOINTS_REFERENCE.md)** - Complete API documentation
+- **[Vehicle Management System](documentation/VEHICLE_MANAGEMENT_SYSTEM.md)** - Vehicle CRUD operations
+- **[Booking & Payment System](documentation/BOOKING_AND_PAYMENT_SYSTEM.md)** - Booking workflow & payment processing
+- **[Recommendation System](documentation/RECOMMENDATION_SYSTEM.md)** - AI-powered recommendation algorithm
+- **[Quick Start Guide](documentation/QUICK_START.md)** - Getting started tutorial
+
+---
+
+## 🚀 Getting Started with RideShareX
+
+### First Time User Setup
+
+1. **Sign Up / Login**
+   - Click "Login with Google" on the landing page
+   - Complete your profile (name, phone, address)
+   - Starting wallet balance: Rs. 10,000
+
+2. **Get Verified (To List Vehicles)**
+   - Go to Dashboard → Profile section
+   - Upload citizenship document (JPEG/PNG/PDF)
+   - Wait for admin approval
+   - Once approved, you can list vehicles
+
+3. **Browse Vehicles**
+   - Visit the Vehicles page to see available vehicles
+   - Filter by location, type, price range
+   - Get personalized recommendations based on your history
+
+4. **Rent a Vehicle**
+   - Click on any vehicle to view details
+   - Select pickup and dropoff dates
+   - Click "Book Now" to send a request
+   - Request expires in 5 minutes if owner doesn't respond
+   - Once owner accepts, payment is processed automatically
+
+5. **List Your Vehicle (Verified Users Only)**
+   - Go to "Become a Host" page
+   - Click "Add New Vehicle"
+   - Upload vehicle photo (Cloudinary)
+   - Fill in details (make, model, price, location)
+   - Vehicle appears in marketplace immediately
+
+6. **Manage Bookings**
+   - **As Renter**: View "My Bookings" to track rental status
+   - **As Owner**: Check "Rental Requests" to approve/reject bookings
+   - Cancel bookings (auto-refund if before confirmation)
+
+7. **Track Transactions**
+   - View transaction history from Dashboard
+   - See payment details, booking snapshots
+   - Monitor wallet balance
+
+---
+
+## 👤 User Roles
+
+### **Renter** (Default)
+- Browse and book vehicles
+- View booking history
+- Manage wallet transactions
+- Get personalized recommendations
+
+### **Owner** (Verified Users)
+- All Renter privileges
+- List unlimited vehicles
+- Manage vehicle listings
+- Accept/reject rental requests
+- Earn from rentals (wallet credits)
+
+### **Admin**
+- All Owner privileges
+- Approve/reject verification requests
+- Access admin verification panel
+- Manage platform users
+
+---
+
+## 📝 Environment Variables Reference
+
+### Backend `.env`
+```env
+# Database
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/ridesharex
+
+# Authentication
+JWT_SECRET=your_random_secret_key
+GOOGLE_CLIENT_ID=your_google_client_id.apps.googleusercontent.com
+
+# Server
+PORT=5000
+FRONTEND_URL=http://localhost:3000
+```
+
+### Frontend `.env`
+```env
+# API Configuration
+REACT_APP_API_URL=http://localhost:5000
+REACT_APP_GOOGLE_CLIENT_ID=your_google_client_id.apps.googleusercontent.com
+
+# Cloudinary (Image Upload)
+REACT_APP_CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
+REACT_APP_CLOUDINARY_UPLOAD_PRESET=your_upload_preset
+```
+
+---
+
+## 🛠️ Development
+
+### Tech Stack Summary
+
+**Frontend:** React 19, React Router DOM 7, Tailwind CSS, Axios, Lucide React  
+**Backend:** Node.js, Express 5, MongoDB, Mongoose, JWT, Multer  
+**Cloud Services:** MongoDB Atlas, Cloudinary  
+**Authentication:** Google OAuth 2.0
+
+### API Architecture
+
+- **RESTful API** design
+- **JWT-based** authentication & authorization
+- **Role-based access control** (Admin, Owner, Renter)
+- **Middleware protection** for sensitive routes
+- **Error handling** with descriptive messages
+- **Request validation** at controller level
+
+### Database Models
+
+1. **User Model**: Profile, wallet, verification status, role
+2. **Vehicle Model**: Details, pricing, ownership, ratings
+3. **Booking Model**: Rental details, status tracking, expiration
+4. **Payment Model**: Transaction records, snapshots, refunds
+
+---
+
+## 🤝 Contributing
+
+This is a semester project for educational purposes. However, suggestions and feedback are welcome!
+
+### Reporting Issues
+If you find a bug or have a feature request, please open an issue on the repository.
+
+### Development Guidelines
+- Follow existing code structure and naming conventions
+- Write clear commit messages
+- Test features before submitting
+- Update documentation for new features
+
+---
+
+## 📄 License
+
+This project is developed as part of academic coursework. All rights reserved to the project team.
+
+---
+
+## 👥 Authors
+
+**RideShareX Development Team**  
+5th Semester Project
+
+---
+
+## 🙏 Acknowledgments
+
+- MongoDB for database hosting
+- Cloudinary for image storage
+- Google for OAuth authentication
+- React and Node.js communities
+
+---
+
+## 📞 Support
+
+For questions or support:
+- Check the [documentation folder](documentation/)
+- Review common issues above
+- Contact the development team
+
+---
+
+**⭐ Built with MERN Stack | Made with ❤️ for Community Mobility**
