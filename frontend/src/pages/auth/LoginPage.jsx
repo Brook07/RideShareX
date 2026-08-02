@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Car, Bike, Truck } from 'lucide-react';
+import { Car, Bike, Truck, ShieldCheck, LoaderCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import axios from 'axios';
 import AuthLayout from '../../components/auth/AuthLayout';
 import GoogleLoginButton from '../../components/auth/GoogleLoginButton';
 import { useAuth } from '../../context/AuthContext';
@@ -14,6 +15,7 @@ export default function LoginPage() {
   const { login } = useAuth();
   const [showTerms, setShowTerms] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
+  const [demoLoading, setDemoLoading] = useState(false);
 
   const slides = [
     {
@@ -50,6 +52,21 @@ export default function LoginPage() {
     }
   };
 
+  const handleDemoLogin = async () => {
+    try {
+      setDemoLoading(true);
+      const response = await axios.post('/api/auth/demo-login');
+
+      login(response.data.user, response.data.token);
+      navigate('/home');
+    } catch (error) {
+      console.error('Demo login error:', error);
+      alert('Demo login failed. Please try again.');
+    } finally {
+      setDemoLoading(false);
+    }
+  };
+
   return (
     <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}>
       <AuthLayout 
@@ -71,6 +88,34 @@ export default function LoginPage() {
           </div>
 
           <GoogleLoginButton onGoogleLogin={handleGoogleLogin} />
+
+          <div className="my-6 flex items-center gap-4 text-sm text-gray-400">
+            <span className="h-px flex-1 bg-gray-200" />
+            <span>or</span>
+            <span className="h-px flex-1 bg-gray-200" />
+          </div>
+
+          <button
+            onClick={handleDemoLogin}
+            disabled={demoLoading}
+            className="flex w-full items-center justify-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-5 py-3 text-sm font-semibold text-blue-700 transition hover:border-blue-300 hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-70"
+          >
+            {demoLoading ? (
+              <>
+                <LoaderCircle className="h-4 w-4 animate-spin" />
+                Loading demo account...
+              </>
+            ) : (
+              <>
+                <ShieldCheck className="h-4 w-4" />
+                Continue as Demo User
+              </>
+            )}
+          </button>
+
+          <p className="mt-3 text-center text-xs text-gray-500">
+            Use the demo account to explore the app without connecting your Google account.
+          </p>
 
           <p className="mt-8 text-center text-sm text-gray-500">
             By continuing, you agree to our{' '}

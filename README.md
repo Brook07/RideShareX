@@ -602,46 +602,7 @@ REACT_APP_CLOUDINARY_UPLOAD_PRESET=your_upload_preset
 
 This is a semester project for educational purposes. However, suggestions and feedback are welcome!
 
-### Reporting Issues
-If you find a bug or have a feature request, please open an issue on the repository.
 
-### Development Guidelines
-- Follow existing code structure and naming conventions
-- Write clear commit messages
-- Test features before submitting
-- Update documentation for new features
-
----
-
-## 📄 License
-
-This project is developed as part of academic coursework. All rights reserved to the project team.
-
----
-
-## 👥 Authors
-
-**RideShareX Development Team**  
-5th Semester Project
-
----
-
-## 🙏 Acknowledgments
-
-- MongoDB for database hosting
-- Cloudinary for image storage
-- Google for OAuth authentication
-- React and Node.js communities
-
----
-
-## 📞 Support
-
-For questions or support:
-- Check the [documentation folder](documentation/)
-- Review common issues above
 - Contact the development team
 
 ---
-
-**⭐ Built with MERN Stack | Made with ❤️ for Community Mobility**
