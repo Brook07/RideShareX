@@ -4,11 +4,79 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const authMiddleware = require('../middleware/auth');
 
+const OFFLINE_DEMO_USER_ID = 'demo-user-ridesharex';
+
+let offlineDemoUser = {
+  id: OFFLINE_DEMO_USER_ID,
+  googleId: 'demo-user-ridesharex',
+  email: 'demo@ridesharex.app',
+  name: 'Demo Rider',
+  picture: 'https://ui-avatars.com/api/?name=Demo+Rider&background=2563eb&color=fff',
+  originalPicture: 'https://ui-avatars.com/api/?name=Demo+Rider&background=2563eb&color=fff',
+  profilePictureUpdatedAt: null,
+  phone: '+1 555 0100',
+  address: 'Demo account for exploring RideShareX',
+  city: 'Kathmandu',
+  role: 'user',
+  hasListedVehicles: false,
+  isProfileComplete: true,
+  walletBalance: 100000,
+  isVerified: true,
+  verificationStatus: 'APPROVED',
+  citizenshipPhoto: null,
+  createdAt: new Date().toISOString(),
+  lastLogin: new Date().toISOString()
+};
+
 // Generate JWT Token
 const generateToken = (userId) => {
   return jwt.sign({ userId }, process.env.JWT_SECRET, {
     expiresIn: '7d'
   });
+};
+
+const generateDemoToken = () => {
+  return jwt.sign({ userId: OFFLINE_DEMO_USER_ID, isDemoUser: true }, process.env.JWT_SECRET, {
+    expiresIn: '7d'
+  });
+};
+
+const buildOfflineDemoResponse = () => ({
+  id: offlineDemoUser.id,
+  googleId: offlineDemoUser.googleId,
+  email: offlineDemoUser.email,
+  name: offlineDemoUser.name,
+  picture: offlineDemoUser.picture,
+  originalPicture: offlineDemoUser.originalPicture,
+  profilePictureUpdatedAt: offlineDemoUser.profilePictureUpdatedAt,
+  phone: offlineDemoUser.phone,
+  address: offlineDemoUser.address,
+  city: offlineDemoUser.city,
+  role: offlineDemoUser.role,
+  hasListedVehicles: offlineDemoUser.hasListedVehicles,
+  isProfileComplete: offlineDemoUser.isProfileComplete,
+  walletBalance: offlineDemoUser.walletBalance,
+  isVerified: offlineDemoUser.isVerified,
+  verificationStatus: offlineDemoUser.verificationStatus,
+  citizenshipPhoto: offlineDemoUser.citizenshipPhoto,
+  createdAt: offlineDemoUser.createdAt,
+  lastLogin: offlineDemoUser.lastLogin
+});
+
+const DEMO_USER = {
+  googleId: 'demo-user-ridesharex',
+  email: 'demo@ridesharex.app',
+  name: 'Demo Rider',
+  picture: 'https://ui-avatars.com/api/?name=Demo+Rider&background=2563eb&color=fff',
+  phone: '+1 555 0100',
+  city: 'Kathmandu',
+  address: 'Demo account for exploring RideShareX',
+  walletBalance: 100000,
+  role: 'user',
+  hasListedVehicles: false,
+  isProfileComplete: true,
+  isVerified: true,
+  verificationStatus: 'APPROVED'
 };
 
 // @route   POST /api/auth/google-login
@@ -110,6 +178,85 @@ router.post('/google-login', async (req, res) => {
   }
 });
 
+// @route   POST /api/auth/demo-login
+// @desc    Sign in with a preconfigured demo account
+// @access  Public
+router.post('/demo-login', async (req, res) => {
+  try {
+    if (process.env.DB_OFFLINE === 'true') {
+      offlineDemoUser.lastLogin = new Date().toISOString();
+
+      return res.json({
+        message: 'Demo login successful',
+        isNewUser: false,
+        isDemoUser: true,
+        token: generateDemoToken(),
+        user: buildOfflineDemoResponse()
+      });
+    }
+
+    let user = await User.findOne({ email: DEMO_USER.email });
+
+    if (!user) {
+      user = await User.create({
+        ...DEMO_USER,
+        originalPicture: DEMO_USER.picture,
+        lastLogin: Date.now()
+      });
+    } else {
+      user.googleId = DEMO_USER.googleId;
+      user.name = DEMO_USER.name;
+      user.picture = DEMO_USER.picture;
+      user.originalPicture = DEMO_USER.picture;
+      user.phone = DEMO_USER.phone;
+      user.city = DEMO_USER.city;
+      user.address = DEMO_USER.address;
+      user.walletBalance = DEMO_USER.walletBalance;
+      user.role = DEMO_USER.role;
+      user.hasListedVehicles = DEMO_USER.hasListedVehicles;
+      user.isProfileComplete = DEMO_USER.isProfileComplete;
+      user.isVerified = DEMO_USER.isVerified;
+      user.verificationStatus = DEMO_USER.verificationStatus;
+      user.lastLogin = Date.now();
+
+      await user.save();
+    }
+
+    const token = generateToken(user._id);
+
+    return res.json({
+      message: 'Demo login successful',
+      isNewUser: false,
+      isDemoUser: true,
+      token,
+      user: {
+        id: user._id,
+        googleId: user.googleId,
+        email: user.email,
+        name: user.name,
+        picture: user.picture,
+        originalPicture: user.originalPicture,
+        profilePictureUpdatedAt: user.profilePictureUpdatedAt,
+        phone: user.phone,
+        address: user.address,
+        city: user.city,
+        role: user.role,
+        hasListedVehicles: user.hasListedVehicles,
+        isProfileComplete: user.isProfileComplete,
+        walletBalance: user.walletBalance,
+        isVerified: user.isVerified,
+        verificationStatus: user.verificationStatus,
+        citizenshipPhoto: user.citizenshipPhoto,
+        createdAt: user.createdAt,
+        lastLogin: user.lastLogin
+      }
+    });
+  } catch (error) {
+    console.error('Demo login error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
 // @route   POST /api/auth/complete-profile
 // @desc    Complete user profile (new users only)
 // @access  Private
@@ -120,6 +267,17 @@ router.post('/complete-profile', authMiddleware, async (req, res) => {
     // Validate input
     if (!phone || !city) {
       return res.status(400).json({ message: 'Phone and city are required' });
+    }
+
+    if (process.env.DB_OFFLINE === 'true' && req.userId === OFFLINE_DEMO_USER_ID) {
+      offlineDemoUser.phone = phone;
+      offlineDemoUser.city = city;
+      offlineDemoUser.isProfileComplete = true;
+
+      return res.json({
+        message: 'Profile completed successfully',
+        user: buildOfflineDemoResponse()
+      });
     }
 
     // Find user and update
@@ -171,6 +329,14 @@ router.post('/complete-profile', authMiddleware, async (req, res) => {
 // @access  Private
 router.get('/me', authMiddleware, async (req, res) => {
   try {
+    if (process.env.DB_OFFLINE === 'true' && req.userId === OFFLINE_DEMO_USER_ID) {
+      offlineDemoUser.lastLogin = new Date().toISOString();
+
+      return res.json({
+        user: buildOfflineDemoResponse()
+      });
+    }
+
     const user = await User.findById(req.userId).select('-__v');
 
     if (!user) {
@@ -215,6 +381,17 @@ router.patch('/profile', authMiddleware, async (req, res) => {
 
     if (!name && !phone && !city) {
       return res.status(400).json({ message: 'Provide at least one field to update' });
+    }
+
+    if (process.env.DB_OFFLINE === 'true' && req.userId === OFFLINE_DEMO_USER_ID) {
+      if (name) offlineDemoUser.name = name;
+      if (phone !== undefined) offlineDemoUser.phone = phone;
+      if (city !== undefined) offlineDemoUser.city = city;
+
+      return res.json({
+        message: 'Profile updated successfully',
+        user: buildOfflineDemoResponse()
+      });
     }
 
     const user = await User.findById(req.userId);

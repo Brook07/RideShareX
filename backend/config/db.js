@@ -7,7 +7,8 @@ const connectDB = async () => {
     console.log('MongoDB Connected Successfully');
   } catch (error) {
     console.error('MongoDB Connection Error:', error.message);
-    process.exit(1);
+    process.env.DB_OFFLINE = 'true';
+    console.warn('Running in offline demo mode without MongoDB.');
   }
 };
 
